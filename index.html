@@ -1,0 +1,1465 @@
+<!DOCTYPE html>mmb
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio – Đỗ Minh Trí | K70A-AI2</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      /* DARK THEME COLORS */
+      --bg: #0f172a;
+      /* Nền xanh đen sâu */
+      --bg-card: #1e293b;
+      /* Nền card nổi */
+      --ink: #f8fafc;
+      /* Chữ trắng sáng */
+      --ink-light: #cbd5e1;
+      /* Chữ xám nhạt */
+      --ink-muted: #64748b;
+      /* Chữ xám tối */
+      --accent: #38bdf8;
+      /* Xanh lơ công nghệ */
+      --accent-glow: rgba(56, 189, 248, 0.4);
+      --border: #334155;
+      /* Viền card */
+      --tag-bg: rgba(56, 189, 248, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* KÍNH MỜ - NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 64px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--ink-light);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      padding: 0.5rem 0;
+      position: relative;
+    }
+
+    /* Hiệu ứng thanh gạch chân khi hover và active (chuyển tab) */
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--accent);
+    }
+
+    .nav-links a.active::after {
+      width: 100%;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* HERO SECTION VỚI ẢNH NỀN */
+    .hero-wrapper {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Ảnh nền AI/Tech cho Hero */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
+      opacity: 0.2;
+      mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    }
+
+    .hero {
+      width: 100%;
+      max-width: 800px;
+      padding: 7rem 2rem 4rem;
+      z-index: 1;
+    }
+
+    .hero-label {
+      font-size: 13px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    /* Tiêu đề Gradient nổi bật */
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(45deg, #f8fafc, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      background: linear-gradient(45deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.1rem;
+      color: var(--ink-light);
+      max-width: 580px;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 2.5rem;
+      margin-bottom: 4rem;
+      background: rgba(30, 41, 59, 0.5);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(5px);
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meta-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--ink-muted);
+      margin-bottom: 4px;
+    }
+
+    .meta-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .hero-scroll {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: var(--ink-muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .scroll-line {
+      width: 50px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--ink-muted), transparent);
+    }
+
+    /* PAGE LAYOUT */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 2rem 6rem;
+    }
+
+    .section-label {
+      font-size: 12px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      margin-top: 6rem;
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--tag-bg);
+      border-radius: 4px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    /* ABOUT VỚI ẢNH ĐẠI DIỆN MẪU */
+    .about-row {
+      display: flex;
+      gap: 3rem;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+    }
+
+    .avatar-wrap {
+      flex-shrink: 0;
+    }
+
+    .avatar-circle {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all .3s;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+
+    .avatar-circle:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+    }
+
+    .avatar-circle img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    .avatar-circle .av-text {
+      font-size: 11px;
+      color: var(--ink);
+      font-weight: 500;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 4px 8px;
+      border-radius: 4px;
+      position: absolute;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .avatar-circle:hover .av-text {
+      opacity: 1;
+    }
+
+    .avatar-circle input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    .about-info {
+      flex: 1;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .about-block h3 {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .5rem;
+    }
+
+    .about-block p {
+      color: var(--ink-light);
+      font-size: 15px;
+    }
+
+    .goal-box {
+      border-left: 4px solid var(--accent);
+      padding: 1.5rem;
+      background: var(--bg-card);
+      border-radius: 0 8px 8px 0;
+      margin-top: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .goal-box p {
+      font-size: 15px;
+      color: var(--ink-light);
+      font-style: italic;
+    }
+
+    /* BÀI TẬP (PROJECT ENTRY) */
+    .bai {
+      margin-top: 5rem;
+      padding-top: 2rem;
+    }
+
+    .bai-header {
+      margin-bottom: 2rem;
+    }
+
+    .bai-num {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bai-num::before {
+      content: '';
+      width: 20px;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    .bai-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: .5rem;
+    }
+
+    .bai-module {
+      font-size: 14px;
+      color: var(--ink-muted);
+    }
+
+    .bai-desc {
+      color: var(--ink-light);
+      font-size: 15.5px;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    /* IMG BLOCK */
+    .img-block {
+      margin: 2.5rem 0;
+    }
+
+    .img-block-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--ink-muted);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .img-block-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .img-full .img-slot {
+      width: 100%;
+      aspect-ratio: 16/7;
+    }
+
+    .img-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .img-3col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .img-featured {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 1rem;
+    }
+
+    /* IMG SLOT */
+    .img-slot {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px dashed var(--border);
+      background: rgba(30, 41, 59, 0.4);
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .3s;
+      min-height: 120px;
+    }
+
+    .img-slot:hover {
+      border-color: var(--accent);
+      background: rgba(30, 41, 59, 0.8);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .img-slot img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      z-index: 1;
+    }
+
+    .img-slot .si {
+      font-size: 24px;
+      opacity: .7;
+      margin-bottom: 8px;
+    }
+
+    .img-slot .st {
+      font-size: 13px;
+      color: var(--ink-light);
+      text-align: center;
+      padding: 0 1rem;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    .img-slot .sh {
+      font-size: 11px;
+      color: var(--ink-muted);
+      text-align: center;
+      margin-top: 6px;
+      padding: 0 .75rem;
+    }
+
+    .img-slot input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+    }
+
+    .img-slot.filled .si,
+    .img-slot.filled .st,
+    .img-slot.filled .sh {
+      display: none;
+    }
+
+    .img-slot .cap {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 20px 10px 10px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .img-slot:hover .cap {
+      opacity: 1;
+    }
+
+    .img-slot .del-btn {
+      display: none;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.8);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+      cursor: pointer;
+      line-index: 26px;
+      text-align: center;
+      transition: all 0.2s;
+      z-index: 5;
+    }
+
+    .img-slot.filled .del-btn {
+      display: block;
+    }
+
+    .img-slot .del-btn:hover {
+      background: #ef4444;
+      border-color: #ef4444;
+    }
+
+    /* CUSTOM CLOUD LOADING PULSE EFFECT */
+    .cloud-loader {
+      position: absolute;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.95);
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      animation: cloudPulse 1.5s infinite ease-in-out;
+    }
+
+    @keyframes cloudPulse {
+      0% {
+        opacity: 0.8;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+
+      100% {
+        opacity: 0.8;
+      }
+    }
+
+    /* HIGHLIGHTS & TAGS */
+    .bai-highlights {
+      background: var(--bg-card);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin: 2rem 0 1.5rem;
+    }
+
+    .bai-highlights h4 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .hl-list {
+      list-style: none;
+    }
+
+    .hl-list li {
+      font-size: 14.5px;
+      color: var(--ink-light);
+      padding: .3rem 0 .3rem 1.5rem;
+      position: relative;
+    }
+
+    .hl-list li::before {
+      content: '▹';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 16px;
+      top: .1rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: 1.5rem;
+    }
+
+    .tag {
+      background: var(--tag-bg);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      font-size: 12px;
+      font-weight: 500;
+      padding: .4rem 1rem;
+      border-radius: 999px;
+    }
+
+    /* REFLECTION */
+    .reflection-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .ref-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: transform 0.3s ease;
+    }
+
+    .ref-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .ref-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: .75rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ref-card p {
+      font-size: 14.5px;
+      color: var(--ink-light);
+      line-height: 1.6;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--ink-muted);
+      font-size: 14px;
+      margin-top: 5rem;
+      background: var(--bg-card);
+    }
+
+    footer strong {
+      color: var(--ink);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero>* {
+      animation: fadeUp .6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .hero>*:nth-child(1) {
+      animation-delay: .1s;
+    }
+
+    .hero>*:nth-child(2) {
+      animation-delay: .2s;
+    }
+
+    .hero>*:nth-child(3) {
+      animation-delay: .3s;
+    }
+
+    .hero>*:nth-child(4) {
+      animation-delay: .4s;
+    }
+
+    .hero>*:nth-child(5) {
+      animation-delay: .5s;
+    }
+
+    @media (max-width: 768px) {
+      .about-row {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        text-align: left;
+      }
+
+      .img-2col,
+      .img-3col,
+      .img-featured {
+        grid-template-columns: 1fr;
+      }
+
+      .reflection-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-meta {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .nav-links {
+        display: none;
+        /* Thu gọn menu trên mobile */
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a class="nav-logo" href="#">Đỗ Minh Trí</a>
+    <ul class="nav-links">
+      <li><a href="#about" class="nav-item">Giới thiệu</a></li>
+      <li><a href="#bai1" class="nav-item">Bài 1</a></li>
+      <li><a href="#bai2" class="nav-item">Bài 2</a></li>
+      <li><a href="#bai3" class="nav-item">Bài 3</a></li>
+      <li><a href="#bai4" class="nav-item">Bài 4</a></li>
+      <li><a href="#bai5" class="nav-item">Bài 5</a></li>
+      <li><a href="#bai6" class="nav-item">Bài 6</a></li>
+      <li><a href="#reflection" class="nav-item">Tổng kết</a></li>
+    </ul>
+  </nav>
+
+  <div class="hero-wrapper">
+    <div class="hero-bg"></div>
+    <div class="hero">
+      <div class="hero-label">Portfolio Kỹ Thuật Số · 2025</div>
+      <h1>Nhập môn<br><em>Công nghệ số</em><br>&amp; Ứng dụng AI</h1>
+      <p class="hero-desc">Tập hợp kết quả học tập từ 6 bài tập thành phần — hành trình khám phá công nghệ số, kỹ năng
+        tìm kiếm, viết prompt, làm việc nhóm, sáng tạo nội dung và sử dụng AI có trách nhiệm.</p>
+      <div class="hero-meta">
+        <div class="meta-item"><span class="meta-label">Họ và tên</span><span class="meta-val">Đỗ Minh Trí</span></div>
+        <div class="meta-item"><span class="meta-label">MSSV</span><span class="meta-val">25023059</span></div>
+        <div class="meta-item"><span class="meta-label">Lớp</span><span class="meta-val">K70A-AI2</span></div>
+      </div>
+      <div class="hero-scroll">
+        <div class="scroll-line"></div>Cuộn xuống để xem đồ án
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <div class="section-label" id="about">I. Giới thiệu</div>
+    <h2 class="section-title">Về bản thân</h2>
+
+    <div class="about-row">
+      <div class="avatar-wrap">
+        <div class="avatar-circle" id="avatarBox">
+          <img src="https://images.unsplash.com/photo-1531297172867-4f50fb5c8743?auto=format&fit=crop&w=300"
+            alt="Avatar">
+          <span class="av-text">Đổi ảnh</span>
+          <input type="file" accept="image/*">
+        </div>
+      </div>
+      <div class="about-info">
+        <div class="about-grid">
+          <div class="about-block">
+            <h3>Ngành học</h3>
+            <p>Trí tuệ Nhân tạo<br>Đại học Công nghệ – ĐHQGHN</p>
+          </div>
+          <div class="about-block">
+            <h3>Sở thích</h3>
+            <p>Nghiên cứu khoa học tự nhiên và theo đuổi các xu hướng công nghệ mới </p>
+          </div>
+          <div class="about-block">
+            <h3>Hoạt động</h3>
+            <p>Thành viên Ban chuyên môn CLB Cờ vua Đại học Quốc gia Hà Nội (VNU Chess Club)</p>
+          </div>
+          <div class="about-block">
+            <h3>Định hướng</h3>
+            <p>AI Vtuber số một Việt Nam</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="goal-box">
+      <p>"Portfolio này không chỉ là một bài tập, mà là hành trình học tập thực sự được ghi lại và phản ánh một cách
+        trung thực."</p>
+    </div>
+
+    <div class="bai" id="bai1">
+      <div class="bai-header">
+        <div class="bai-num">Bài 01 · Mục 1.4</div>
+        <div class="bai-title">Thao tác cơ bản với tệp tin và thư mục</div>
+        <div class="bai-module">Máy tính và các thiết bị ngoại vi</div>
+      </div>
+      <p class="bai-desc">Xây dựng và triển khai quy trình quản lý tệp tin chuyên nghiệp trên Windows — từ tạo cấu trúc
+        thư mục tối ưu đến thành thạo Copy, Cut, Paste, Rename, Delete và khôi phục từ Recycle Bin.</p>
+
+      <div class="img-block">
+        <div class="img-block-label">Cấu trúc thư mục đã tạo</div>
+        <div class="img-full">
+          <div class="img-slot" id="b1a">
+            <div class="si">🗂️</div>
+            <div class="st">Ảnh chụp màn hình File Explorer</div>
+            <div class="sh">Kéo thả ảnh hoặc click để chọn file</div>
+            <div class="cap">Cấu trúc thư mục</div>
+            <button class="del-btn" onclick="delImg('b1a',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="img-block">
+        <div class="img-block-label">Thao tác Copy & Move (Cut)</div>
+        <div class="img-2col">
+          <div class="img-slot" id="b1b">
+            <div class="si">📋</div>
+            <div class="st">Copy & Paste</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Copy & Paste</div>
+            <button class="del-btn" onclick="delImg('b1b',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+          <div class="img-slot" id="b1c">
+            <div class="si">✂️</div>
+            <div class="st">Cut & Paste (Di chuyển)</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Cut & Paste</div>
+            <button class="del-btn" onclick="delImg('b1c',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="img-block">
+        <div class="img-block-label">Đổi tên & Xóa / Khôi phục</div>
+        <div class="img-2col">
+          <div class="img-slot" id="b1d">
+            <div class="si">✏️</div>
+            <div class="st">Đổi tên file (Rename)</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Rename</div>
+            <button class="del-btn" onclick="delImg('b1d',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+          <div class="img-slot" id="b1e">
+            <div class="si">🗑️</div>
+            <div class="st">Recycle Bin & Restore</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Recycle Bin</div>
+            <button class="del-btn" onclick="delImg('b1e',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="bai-highlights">
+        <h4>Kết quả nổi bật</h4>
+        <ul class="hl-list">
+          <li>Tạo cấu trúc thư mục phân cấp: ThucHanh_DoMinhTri / TaiLieu</li>
+          <li>Thành thạo 12 bước thao tác tệp tin với File Explorer</li>
+          <li>Áp dụng quy tắc đặt tên chuẩn, không dấu, mô tả rõ nội dung</li>
+          <li>Hiểu sự khác biệt giữa xóa thường và xóa vĩnh viễn (Shift+Delete)</li>
+        </ul>
+      </div>
+      <div class="tags"><span class="tag">Windows Explorer</span><span class="tag">Quản lý tệp tin</span><span
+          class="tag">Tổ chức dữ liệu</span></div>
+    </div>
+
+    <div class="bai" id="bai2">
+      <div class="bai-header">
+        <div class="bai-num">Bài 02 · Mục 2.4</div>
+        <div class="bai-title">Tìm kiếm và đánh giá thông tin học thuật</div>
+        <div class="bai-module">Khai thác dữ liệu và thông tin</div>
+      </div>
+      <p class="bai-desc">Thực hiện tìm kiếm chuyên sâu về AI, tổng hợp và đánh giá 10 nguồn học thuật hàng đầu từ
+        NeurIPS, arXiv. Xây dựng bảng đánh giá độ tin cậy kèm nhận xét phân tích cá nhân cho từng tài liệu.</p>
+
+      <div class="img-block">
+        <div class="img-block-label">Kết quả tìm kiếm học thuật</div>
+        <div class="img-full">
+          <div class="img-slot" id="b2a" style="aspect-ratio:16/8">
+            <div class="si">🔍</div>
+            <div class="st">Màn hình Google Scholar / arXiv</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Google Scholar search result</div>
+            <button class="del-btn" onclick="delImg('b2a',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="img-block">
+        <div class="img-block-label">Bảng đánh giá 10 tài liệu</div>
+        <div class="img-full">
+          <div class="img-slot" id="b2b">
+            <div class="si">📊</div>
+            <div class="st">Bảng đánh giá hoàn chỉnh (Word / Google Docs)</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Bảng đánh giá nguồn tài liệu</div>
+            <button class="del-btn" onclick="delImg('b2b',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="bai-highlights">
+        <h4>Kết quả nổi bật</h4>
+        <ul class="hl-list">
+          <li>Đánh giá 10 tài liệu từ "Attention Is All You Need" đến LLaMA với thang 5 sao</li>
+          <li>Phân tích phê bình: nhận ra GPT-4 Technical Report thiếu minh bạch về tham số</li>
+          <li>Tích hợp tài liệu địa phương về NLP tiếng Việt (VNU-LIC)</li>
+        </ul>
+      </div>
+      <div class="tags"><span class="tag">Google Scholar</span><span class="tag">arXiv</span><span class="tag">Đánh giá
+          học thuật</span></div>
+    </div>
+
+    <div class="bai" id="bai3">
+      <div class="bai-header">
+        <div class="bai-num">Bài 03 · Mục 3.4</div>
+        <div class="bai-title">Viết Prompt hiệu quả cho tác vụ học tập</div>
+        <div class="bai-module">Tổng quan về Trí tuệ Nhân tạo</div>
+      </div>
+      <p class="bai-desc">Thử nghiệm hệ thống prompt engineering qua 3 tác vụ: tóm tắt bài báo, giải thích CNN, tạo câu
+        hỏi ôn tập. So sánh 3 cấp độ prompt (Cơ bản → Cải tiến → Nâng cao) và đúc kết nguyên tắc CREATE.</p>
+
+      <div class="img-block">
+        <div class="img-block-label">So sánh 3 cấp độ Prompt</div>
+        <div class="img-3col">
+          <div class="img-slot" id="b3a">
+            <div class="si">💬</div>
+            <div class="st">Prompt Cơ bản</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Kết quả Cơ bản</div>
+            <button class="del-btn" onclick="delImg('b3a',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+          <div class="img-slot" id="b3b">
+            <div class="si">🔧</div>
+            <div class="st">Prompt Cải tiến</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Kết quả Cải tiến</div>
+            <button class="del-btn" onclick="delImg('b3b',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+          <div class="img-slot" id="b3c">
+            <div class="si">⭐</div>
+            <div class="st">Prompt Nâng cao</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Kết quả Nâng cao</div>
+            <button class="del-btn" onclick="delImg('b3c',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="img-block">
+        <div class="img-block-label">Bảng tổng hợp đánh giá 9 Prompt</div>
+        <div class="img-full">
+          <div class="img-slot" id="b3d">
+            <div class="si">📋</div>
+            <div class="st">Bảng so sánh đầy đủ</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <div class="cap">Bảng tổng hợp so sánh prompt</div>
+            <button class="del-btn" onclick="delImg('b3d',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="bai-highlights">
+        <h4>Kết quả nổi bật</h4>
+        <ul class="hl-list">
+          <li>Phân tích 9 prompt đầu ra, đánh giá từ "Kém" đến "Xuất sắc"</li>
+          <li>Đúc kết nguyên tắc CREATE: Context, Role, Explicit, Appearance, Tone, Examples</li>
+          <li>Chứng minh Chain-of-Thought giảm thiểu hallucination</li>
+        </ul>
+      </div>
+      <div class="tags"><span class="tag">Prompt Engineering</span><span class="tag">Role Prompting</span><span
+          class="tag">Chain-of-Thought</span></div>
+    </div>
+
+    <div class="bai" id="bai4">
+      <div class="bai-header">
+        <div class="bai-num">Bài 04 · Mục 4.4</div>
+        <div class="bai-title">Hợp tác trực tuyến dự án nhóm</div>
+        <div class="bai-module">Giao tiếp trong môi trường số</div>
+      </div>
+
+      <div class="img-block">
+        <div class="img-block-label">Trello — Quản lý tiến độ</div>
+        <div class="img-full">
+          <div class="img-slot" id="b4a" style="aspect-ratio:16/8">
+            <div class="si">📌</div>
+            <div class="st">Màn hình Board Trello</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <button class="del-btn" onclick="delImg('b4a',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="img-block">
+        <div class="img-block-label">Google Docs & Drive</div>
+        <div class="img-2col">
+          <div class="img-slot" id="b4b">
+            <div class="si">📝</div>
+            <div class="st">Google Docs</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <button class="del-btn" onclick="delImg('b4b',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+          <div class="img-slot" id="b4c">
+            <div class="si">📁</div>
+            <div class="st">Google Drive</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <button class="del-btn" onclick="delImg('b4c',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="tags"><span class="tag">Trello</span><span class="tag">Google Workspace</span><span class="tag">Quản
+          lý dự án</span></div>
+    </div>
+
+    <div class="bai" id="bai5">
+      <div class="bai-header">
+        <div class="bai-num">Bài 05 · Mục 5.4</div>
+        <div class="bai-title">AI hỗ trợ sáng tạo nội dung</div>
+        <div class="bai-module">Sáng tạo nội dung số</div>
+      </div>
+
+      <div class="img-block">
+        <div class="img-block-label">Sản phẩm video hoàn thiện</div>
+        <div class="img-full">
+          <div class="img-slot" id="b5a">
+            <div class="si">🎬</div>
+            <div class="st">Thumbnail video Minimax</div>
+            <div class="sh">Kéo thả hoặc click tải ảnh</div>
+            <button class="del-btn" onclick="delImg('b5a',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="img-block">
+        <div class="img-block-label">Quy trình sử dụng 3 công cụ AI</div>
+        <div class="img-3col">
+          <div class="img-slot" id="b5b">
+            <div class="si">🤖</div>
+            <div class="st">Midjourney</div>
+            <button class="del-btn" onclick="delImg('b5b',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+          <div class="img-slot" id="b5c">
+            <div class="si">✨</div>
+            <div class="st">Canva AI / Firefly</div>
+            <button class="del-btn" onclick="delImg('b5c',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+          <div class="img-slot" id="b5d">
+            <div class="si">💻</div>
+            <div class="st">Demo C++</div>
+            <button class="del-btn" onclick="delImg('b5d',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+      <div class="tags"><span class="tag">Generative AI</span><span class="tag">Midjourney</span><span
+          class="tag">C++</span></div>
+    </div>
+
+    <div class="bai" id="bai6">
+      <div class="bai-header">
+        <div class="bai-num">Bài 06 · Mục 6.4</div>
+        <div class="bai-title">AI có trách nhiệm trong học tập</div>
+        <div class="bai-module">An toàn & Liêm chính học thuật</div>
+      </div>
+
+      <div class="img-block">
+        <div class="img-block-label">Sản phẩm học tập</div>
+        <div class="img-featured">
+          <div class="img-slot" id="b6a" style="aspect-ratio:4/3">
+            <div class="si">📜</div>
+            <div class="st">Slide có ghi chú AI</div>
+            <button class="del-btn" onclick="delImg('b6a',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+          <div class="img-slot" id="b6b" style="aspect-ratio:4/3">
+            <div class="si">🧭</div>
+            <div class="st">Infographic 7 nguyên tắc</div>
+            <button class="del-btn" onclick="delImg('b6b',event)">✕</button>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+      </div>
+      <div class="tags"><span class="tag">AI Ethics</span><span class="tag">Liêm chính học thuật</span></div>
+    </div>
+
+    <div class="section-label" id="reflection" style="margin-top:5rem">III. Tổng kết</div>
+    <h2 class="section-title">Trải nghiệm &amp; Bài học</h2>
+    <div class="reflection-grid">
+      <div class="ref-card">
+        <h3> Kỹ năng chính đạt được</h3>
+        <p>Từ quản lý tệp tin cơ bản đến prompt engineering nâng cao, từ đánh giá nguồn học thuật đến phân tích đạo đức
+          AI — một vòng tròn kỹ năng số hoàn chỉnh.</p>
+      </div>
+      <div class="ref-card">
+        <h3> Thách thức thú vị nhất</h3>
+        <p>Bài 3 — Prompt Engineering: cách "nói chuyện" với AI quan trọng không kém năng lực của AI. Một prompt tốt tạo
+          ra kết quả "Xuất sắc" từ cùng một model.</p>
+      </div>
+      <div class="ref-card">
+        <h3> Điều tâm đắc nhất</h3>
+        <p>Bài 6 thay đổi cách nhìn về AI: không phải công cụ thần kỳ hay mối đe dọa, mà là "người thực tập đắc lực" cần
+          giám sát và hướng dẫn của con người.</p>
+      </div>
+      <div class="ref-card">
+        <h3> Định hướng tiếp theo</h3>
+        <p>Ứng dụng nguyên tắc CREATE và 7 nguyên tắc AI có trách nhiệm vào các đồ án chuyên ngành. Tiếp tục xây dựng
+          portfolio như một sản phẩm sống.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <p><strong>Đỗ Minh Trí</strong> · MSSV 25023059 · K70A-AI2</p>
+    <p style="margin-top:.4rem">Nhập môn Công nghệ số và Ứng dụng Trí tuệ Nhân tạo · 2025 · Đại học Công nghệ – ĐHQGHN
+    </p>
+  </footer>
+
+  <script>
+    /* 1. HIỆU ỨNG SCROLL SPY THU GỌN VỚI PERFORMANCE THROTTLE */
+    const sections = document.querySelectorAll('.bai, #about, #reflection');
+    const navItems = document.querySelectorAll('.nav-item');
+    let isScrolling = false;
+
+    window.addEventListener('scroll', () => {
+      if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+          let current = '';
+          sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (window.scrollY >= (sectionTop - 150)) {
+              current = section.getAttribute('id');
+            }
+          });
+
+          navItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('href') === `#${current}`) {
+              item.classList.add('active');
+            }
+          });
+          isScrolling = false;
+        });
+        isScrolling = true;
+      }
+    });
+
+    /* 2. CUỘN MƯỢT HOẶC VỀ ĐẦU TRANG KHI BẤM LOGO */
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+
+        if (targetId === '#') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    /* 3. HIỆU ỨNG FADE IN KHI CUỘN */
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.animation = 'fadeUp .6s cubic-bezier(0.16, 1, 0.3, 1) both';
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.bai, .ref-card, .about-block').forEach(c => { c.style.opacity = '0'; io.observe(c); });
+
+
+    /* 4. CHỨC NĂNG LƯU TRỮ ẢNH VÀO HỆ THỐNG ĐÁM MÂY (IMGBB & JSONBIN) */
+    const IMGBB_API_KEY = "1a04b5e27408dd42b577f339a38c9788";
+    const JSONBIN_MASTER_KEY = "$2a$10$kK1wNf5DJyLRtuAhZcdKoONkjp8PWafy8Xea9oP/TV2OE7T7SXN9a";
+    const BIN_ID = "6a21760bf5f4af5e29b8022c";
+
+    // Hàm gửi danh sách link ảnh lên Database đám mây JSONBin để đồng bộ mọi máy
+    async function syncDataToCloud(slotId, url) {
+      let currentData = {};
+      document.querySelectorAll('.img-slot').forEach(s => {
+        const id = s.getAttribute('id');
+        const saved = localStorage.getItem('portfolio_img_url_' + id);
+        if (saved) currentData[id] = saved;
+      });
+      if (slotId) {
+        if (url) currentData[slotId] = url;
+        else delete currentData[slotId];
+      }
+
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': JSONBIN_MASTER_KEY
+          },
+          body: JSON.stringify(currentData)
+        });
+      } catch (e) { console.error("Lỗi đồng bộ Cloud:", e); }
+    }
+
+    // Khi tải trang: Tự động tải toàn bộ ảnh công khai từ Database về (Áp dụng cho mọi thiết bị)
+    window.addEventListener('DOMContentLoaded', async () => {
+      // Khôi phục avatar cục bộ (Duy trì cơ chế base64 bảo mật riêng tư trên thiết bị)
+      const savedAvatar = localStorage.getItem('portfolio_avatar');
+      if (savedAvatar) {
+        const avatarImg = document.querySelector('#avatarBox img');
+        if (avatarImg) avatarImg.src = savedAvatar;
+      }
+
+      // Kết nối đám mây JSONBin kéo danh sách link ảnh về hiển thị
+      try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+          method: 'GET',
+          headers: { 'X-Master-Key': JSONBIN_MASTER_KEY }
+        });
+        const resData = await response.json();
+        const cloudData = resData.record;
+
+        if (cloudData) {
+          Object.keys(cloudData).forEach(id => {
+            const slot = document.getElementById(id);
+            if (slot) {
+              let img = slot.querySelector('img');
+              if (!img) {
+                img = document.createElement('img');
+                slot.prepend(img); // Đưa lên đầu danh sách phần tử con
+              }
+              img.src = cloudData[id];
+              slot.classList.add('filled');
+              localStorage.setItem('portfolio_img_url_' + id, cloudData[id]);
+            }
+          });
+        }
+      } catch (error) {
+        // Phương án dự phòng: Nếu lỗi mạng hoặc Database trống, khôi phục từ bộ nhớ cục bộ
+        document.querySelectorAll('.img-slot').forEach(slot => {
+          const id = slot.getAttribute('id');
+          const savedUrl = localStorage.getItem('portfolio_img_url_' + id);
+          if (savedUrl) {
+            let img = slot.querySelector('img');
+            if (!img) {
+              img = document.createElement('img');
+              slot.prepend(img);
+            }
+            img.src = savedUrl;
+            slot.classList.add('filled');
+          }
+        });
+      }
+    });
+
+    // Xử lý nạp Avatar độc lập
+    const avatarInput = document.querySelector('#avatarBox input[type=file]');
+    if (avatarInput) {
+      avatarInput.addEventListener('change', function () {
+        const f = this.files[0]; if (!f) return;
+        const r = new FileReader();
+        r.onload = e => {
+          const box = document.getElementById('avatarBox');
+          let img = box.querySelector('img');
+          if (!img) { img = document.createElement('img'); box.appendChild(img); }
+          img.src = e.target.result;
+          localStorage.setItem('portfolio_avatar', e.target.result);
+        };
+        r.readAsDataURL(f);
+      });
+    }
+
+    // Hàm lõi xử lý Đẩy ảnh lên ImgBB (Kéo thả hoặc Bấm chọn file)
+    async function uploadToImgBB(file, slotId) {
+      const slot = document.getElementById(slotId);
+      if (!file || !file.type.startsWith('image/')) return alert('Vui lòng chỉ tải các file định dạng ảnh!');
+
+      const loader = document.createElement('div');
+      loader.className = 'cloud-loader';
+      loader.innerHTML = '<span>🔄 Connecting Cloud...</span><span style="font-size:11px;opacity:0.7">Uploading to ImgBB</span>';
+      slot.appendChild(loader);
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const imageUrl = data.data.url;
+
+          let img = slot.querySelector('img');
+          if (!img) {
+            img = document.createElement('img');
+            slot.prepend(img);
+          }
+          img.src = imageUrl;
+          slot.classList.add('filled');
+
+          localStorage.setItem('portfolio_img_url_' + slotId, imageUrl);
+
+          // Đồng bộ hóa danh sách lên Cloud chung
+          await syncDataToCloud(slotId, imageUrl);
+        } else {
+          alert('Lỗi máy chủ lưu trữ: ' + data.error.message);
+        }
+      } catch (error) {
+        alert('Không thể thiết lập kết nối đến kho ảnh ImgBB!');
+      } finally {
+        loader.remove();
+      }
+    }
+
+    // Gán sự kiện Kéo thả & Chọn file cho toàn bộ các ô Bài tập
+    document.querySelectorAll('.img-slot').forEach(slot => {
+      const slotId = slot.getAttribute('id');
+      if (!slotId) return;
+
+      slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.style.borderColor = '#38bdf8'; });
+      slot.addEventListener('dragleave', () => { slot.style.borderColor = ''; });
+
+      slot.addEventListener('drop', (e) => {
+        e.preventDefault();
+        slot.style.borderColor = '';
+        const file = e.dataTransfer.files[0];
+        if (file) uploadToImgBB(file, slotId);
+      });
+
+      const fileInput = slot.querySelector('input[type=file]');
+      if (fileInput) {
+        fileInput.removeAttribute('onchange');
+        fileInput.addEventListener('change', function (e) {
+          if (this.files[0]) uploadToImgBB(this.files[0], slotId);
+        });
+      }
+    });
+
+    // Hàm Xóa ảnh công nghệ đám mây chống nổi bọt sự kiện
+    function delImg(id, evt) {
+      if (evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+      }
+
+      const slot = document.getElementById(id);
+      const img = slot.querySelector('img');
+      if (img) img.remove();
+      slot.classList.remove('filled');
+
+      const fileInput = slot.querySelector('input[type=file]');
+      if (fileInput) fileInput.value = '';
+
+      localStorage.removeItem('portfolio_img_url_' + id);
+      syncDataToCloud(id, ""); // Gửi lệnh xóa bản ghi lên Database đám mây
+    }
+  </script>
+</body>
+
+</html>
