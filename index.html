@@ -170,7 +170,7 @@
       position: absolute;
       inset: 0;
       z-index: -1;
-      background: url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
+      background: url('https://scontent-hkg1-1.xx.fbcdn.net/v/t39.30808-6/705350613_122174550386825359_7742457518527163366_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_eui2=AeGLRpBeo2JkObQQdS-y9CgeMb9YiOa24eIxv1iI5rbh4r4jVunY8_p7CwA51WL9Cr6nQm_VLf0BdgirCLG2IY-Z&_nc_ohc=XGc8lE9tmoMQ7kNvwG7gX8_&_nc_oc=AdraTMilaQRiKQDOVG4qw8xpJxY7-Vko29QljOKrpet8fwDHjBLpIL9MhuMRFjpbV_A&_nc_zt=23&_nc_ht=scontent-hkg1-1.xx&_nc_gid=90iH4xxNgdHTvX0sSezBIQ&_nc_ss=7b2a8&oh=00_Af9fhSK9gT2ZC6ENN-uZmcvEyUEa3J5TfP-BJlCe6xmflw&oe=6A280230') center/cover no-repeat;
       opacity: 0.2;
       mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
       -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
@@ -209,6 +209,9 @@
       background: linear-gradient(45deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+
+      /* THÊM DÒNG NÀY: Tạo bóng đổ màu xanh trùng màu để bù vào phần khuyết của dấu */
+      filter: drop-shadow(0px 0px 0.5px #38bdf8);
     }
 
     .hero-desc {
@@ -1805,7 +1808,7 @@
         <div class="meta-item"><span class="meta-label">Lớp</span><span class="meta-val">K70A-AI2</span></div>
       </div>
       <div class="hero-scroll">
-        <div class="scroll-line"></div>Cuộn xuống để xem đồ án
+        <div class="scroll-line"></div>Cuộn xuống để xem
       </div>
     </div>
   </div>
