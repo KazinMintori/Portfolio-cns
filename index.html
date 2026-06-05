@@ -60,6 +60,7 @@
       padding: 0 2rem;
       height: 64px;
       transition: all 0.3s ease;
+      gap: 1rem;
     }
 
     .nav-logo {
@@ -108,6 +109,55 @@
       box-shadow: 0 0 10px var(--accent-glow);
     }
 
+    /* editMode toggle — UI removed, controlled via JS variable only */
+
+    /* ── PRESENTATION MODE OVERRIDES ── */
+    body.mode-present .img-slot:not(.filled) {
+      pointer-events: none;
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    body.mode-present .img-slot:not(.filled):hover {
+      transform: none !important;
+      border-color: var(--border) !important;
+      background: rgba(30, 41, 59, .4) !important;
+      box-shadow: none !important;
+    }
+
+    body.mode-present .word-drop input[type=file] {
+      pointer-events: none;
+    }
+
+    body.mode-present .word-drop:not(.has-file) {
+      pointer-events: none;
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    body.mode-present .word-drop.has-file {
+      cursor: default;
+    }
+
+    body.mode-present .wd-del {
+      display: none !important;
+    }
+
+    body.mode-present .avatar-circle {
+      pointer-events: none !important;
+      cursor: default !important;
+    }
+
+    body.mode-present .avatar-circle .av-text {
+      display: none !important;
+    }
+
+    body.mode-present .avatar-circle:hover {
+      transform: none !important;
+      box-shadow: 0 0 20px rgba(56, 189, 248, .15) !important;
+    }
+
+    /* ── HERO ── */
     .hero-wrapper {
       position: relative;
       min-height: 100vh;
@@ -120,7 +170,7 @@
       position: absolute;
       inset: 0;
       z-index: -1;
-      background: url('https://scontent-hkg1-1.xx.fbcdn.net/v/t39.30808-6/705350613_122174550386825359_7742457518527163366_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_eui2=AeGLRpBeo2JkObQQdS-y9CgeMb9YiOa24eIxv1iI5rbh4r4jVunY8_p7CwA51WL9Cr6nQm_VLf0BdgirCLG2IY-Z&_nc_ohc=XGc8lE9tmoMQ7kNvwG7gX8_&_nc_oc=AdraTMilaQRiKQDOVG4qw8xpJxY7-Vko29QljOKrpet8fwDHjBLpIL9MhuMRFjpbV_A&_nc_zt=23&_nc_ht=scontent-hkg1-1.xx&_nc_gid=90iH4xxNgdHTvX0sSezBIQ&_nc_ss=7b2a8&oh=00_Af9fhSK9gT2ZC6ENN-uZmcvEyUEa3J5TfP-BJlCe6xmflw&oe=6A280230') center/cover no-repeat;
+      background: url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
       opacity: 0.2;
       mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
       -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
@@ -159,9 +209,6 @@
       background: linear-gradient(45deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-
-      /* THÊM DÒNG NÀY: Tạo bóng đổ màu xanh trùng màu để bù vào phần khuyết của dấu */
-      filter: drop-shadow(0px 0px 0.5px #38bdf8);
     }
 
     .hero-desc {
@@ -504,22 +551,16 @@
       padding: 0 .75rem;
     }
 
+    /* Inputs in img-slots: pointer-events off — clicks handled by JS */
     .img-slot input[type=file] {
       position: absolute;
       inset: 0;
       opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
+      pointer-events: none;
       z-index: 3;
     }
 
-    .img-slot.filled .si,
-    .img-slot.filled .st,
-    .img-slot.filled .sh {
-      display: none;
-    }
-
+    /* Caption on hover (for placeholder text) */
     .img-slot .cap {
       position: absolute;
       bottom: 0;
@@ -541,31 +582,491 @@
       opacity: 1;
     }
 
-    .img-slot .del-btn {
-      display: none;
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(15, 23, 42, 0.8);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      font-size: 14px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-      z-index: 5;
+    /* Zoom hint overlay on filled images */
+    .img-slot.filled {
+      cursor: zoom-in;
     }
 
-    .img-slot.filled .del-btn {
+    .img-slot.filled .si,
+    .img-slot.filled .st,
+    .img-slot.filled .sh {
+      display: none;
+    }
+
+    .img-slot.filled::before {
+      content: '🔍';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      font-size: 2rem;
+      z-index: 6;
+      opacity: 0;
+      transition: all .25s;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .8));
+    }
+
+    .img-slot.filled:hover::before {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* Khi đã zoom: ẩn hint, đổi cursor */
+    .img-slot.zoomed::before {
+      display: none;
+    }
+
+    .img-slot.zoomed {
+      cursor: grab !important;
+    }
+
+    .img-slot.zoomed:active {
+      cursor: grabbing !important;
+    }
+
+    /* Dim overlay on filled image hover */
+    .img-slot.filled::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .28);
+      border-radius: 11px;
+      opacity: 0;
+      transition: opacity .25s;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .img-slot.filled:hover::after {
+      opacity: 1;
+    }
+
+    .img-slot.zoomed::after {
+      opacity: 0 !important;
+    }
+
+    /* Nút reset zoom (hiện khi đang zoom) */
+    .slot-zoom-reset {
+      display: none;
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 9;
+      background: rgba(15, 23, 42, .82);
+      border: 1px solid rgba(255, 255, 255, .22);
+      color: #f8fafc;
+      font-size: 11px;
+      font-weight: 700;
+      padding: .2rem .55rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background .2s;
+      pointer-events: all;
+      font-family: 'Outfit', sans-serif;
+      line-height: 1.5;
+    }
+
+    .slot-zoom-reset:hover {
+      background: rgba(56, 189, 248, .4);
+      border-color: var(--accent);
+    }
+
+    .img-slot.zoomed .slot-zoom-reset {
       display: block;
     }
 
-    .img-slot .del-btn:hover {
-      background: #ef4444;
+    /* Badge phần trăm zoom */
+    .slot-zoom-badge {
+      display: none;
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      z-index: 9;
+      background: rgba(15, 23, 42, .75);
+      border: 1px solid rgba(255, 255, 255, .13);
+      color: var(--ink-muted);
+      font-size: 10px;
+      font-weight: 700;
+      padding: .15rem .45rem;
+      border-radius: 4px;
+      pointer-events: none;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: .04em;
+    }
+
+    .img-slot.zoomed .slot-zoom-badge {
+      display: block;
+    }
+
+    /* ── FORMAT BUTTON (chỉ hiện khi edit mode + có ảnh) ── */
+    .slot-fmt-btn {
+      display: none;
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      z-index: 9;
+      background: rgba(15, 23, 42, .85);
+      border: 1px solid rgba(255, 255, 255, .2);
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 700;
+      padding: .2rem .6rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all .2s;
+      pointer-events: all;
+      font-family: 'Outfit', sans-serif;
+      line-height: 1.5;
+    }
+
+    .slot-fmt-btn:hover {
+      background: rgba(56, 189, 248, .35);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    body.mode-edit .img-slot.filled .slot-fmt-btn {
+      display: block;
+    }
+
+    body.mode-present .slot-fmt-btn {
+      display: none !important;
+    }
+
+    /* ══════════════════════════════════════════
+       FORMAT PANEL — chỉnh sửa ảnh thủ công
+       ══════════════════════════════════════════ */
+    .fmt-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 450;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .fmt-bg {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 8, 18, .96);
+      backdrop-filter: blur(14px);
+    }
+
+    .fmt-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+
+    .fmt-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 54px;
+      flex-shrink: 0;
+      background: rgba(15, 23, 42, .9);
+      border-bottom: 1px solid rgba(255, 255, 255, .07);
+      gap: 1rem;
+    }
+
+    .fmt-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fmt-title-slot {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .fmt-topbar-actions {
+      display: flex;
+      gap: .5rem;
+    }
+
+    .fmt-apply-btn {
+      background: var(--accent);
+      border: none;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 700;
+      padding: .4rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity .2s;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .fmt-apply-btn:hover {
+      opacity: .85;
+    }
+
+    .fmt-cancel-btn {
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid rgba(255, 255, 255, .14);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 600;
+      padding: .4rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .fmt-cancel-btn:hover {
+      background: rgba(255, 255, 255, .14);
+    }
+
+    .fmt-body {
+      flex: 1;
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    /* Khu vực preview */
+    .fmt-preview-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 1rem;
+      min-width: 0;
+    }
+
+    .fmt-preview-frame {
+      position: relative;
+      overflow: hidden;
+      border-radius: 10px;
+      border: 2px solid rgba(56, 189, 248, .3);
+      box-shadow: 0 0 40px rgba(56, 189, 248, .1);
+      cursor: grab;
+      background: #0a0f1e;
+      /* aspect-ratio set by JS from slot */
+      max-width: min(100%, 640px);
+      width: 100%;
+    }
+
+    .fmt-preview-frame:active {
+      cursor: grabbing;
+    }
+
+    #fmt-preview-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform-origin: center center;
+      pointer-events: none;
+      user-select: none;
+      will-change: transform;
+    }
+
+    .fmt-preview-hint {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .3);
+      text-align: center;
+      user-select: none;
+    }
+
+    .fmt-preview-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, .8);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: var(--ink-muted);
+      font-size: 10px;
+      font-weight: 700;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 2;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Panel điều khiển */
+    .fmt-controls {
+      width: 280px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      background: rgba(15, 23, 42, .6);
+      border-left: 1px solid rgba(255, 255, 255, .06);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .fmt-ctrl-group {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .fmt-ctrl-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--accent);
+    }
+
+    .fmt-fit-row {
+      display: flex;
+      gap: .4rem;
+    }
+
+    .fmt-fit-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: var(--ink-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: .45rem .3rem;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'Outfit', sans-serif;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .fmt-fit-btn.active {
+      background: rgba(56, 189, 248, .18);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .fmt-fit-btn:hover:not(.active) {
+      background: rgba(255, 255, 255, .1);
+      color: var(--ink-light);
+    }
+
+    .fmt-slider-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .fmt-slider-label {
+      font-size: 12px;
+      color: var(--ink-light);
+    }
+
+    .fmt-slider-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      min-width: 44px;
+      text-align: right;
+    }
+
+    .fmt-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: rgba(255, 255, 255, .12);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .fmt-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(56, 189, 248, .5);
+      cursor: pointer;
+    }
+
+    .fmt-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: var(--accent);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .fmt-presets-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .4rem;
+    }
+
+    .fmt-preset-btn {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .1);
+      color: var(--ink-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: .35rem .4rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'Outfit', sans-serif;
+      text-align: center;
+    }
+
+    .fmt-preset-btn:hover {
+      background: rgba(56, 189, 248, .15);
+      color: var(--accent);
+      border-color: rgba(56, 189, 248, .3);
+    }
+
+    .fmt-reset-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: var(--ink-muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: .5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'Outfit', sans-serif;
+      margin-top: auto;
+    }
+
+    .fmt-reset-btn:hover {
       border-color: #ef4444;
+      color: #f87171;
+      background: rgba(239, 68, 68, .08);
+    }
+
+    @media (max-width: 600px) {
+      .fmt-body {
+        flex-direction: column;
+      }
+
+      .fmt-controls {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, .06);
+        max-height: 240px;
+      }
+
+      .fmt-preview-area {
+        padding: 1rem;
+      }
     }
 
     .cloud-loader {
@@ -771,13 +1272,16 @@
       .nav-links {
         display: none;
       }
+
+      .toggle-label-text {
+        display: none;
+      }
     }
 
     /* ══════════════════════════════════════════
        UPLOAD FILE WORD + OVERLAY XEM BÀI LÀM
        ══════════════════════════════════════════ */
 
-    /* Khu vực upload Word */
     .word-section {
       margin-top: 2rem;
       display: flex;
@@ -866,7 +1370,6 @@
       display: block;
     }
 
-    /* Nút xem */
     .bai-view-btn {
       display: inline-flex;
       align-items: center;
@@ -905,13 +1408,12 @@
       transform: translateX(3px);
     }
 
-    /* Overlay toàn màn hình */
+    /* Overlay xem Word */
     .doc-page {
       position: fixed;
       inset: 0;
       z-index: 200;
       background: #f8f9fb;
-      /* nền trắng sáng cho tài liệu Word */
       display: none;
       flex-direction: column;
       overflow: hidden;
@@ -976,14 +1478,12 @@
       white-space: nowrap;
     }
 
-    /* Vùng cuộn nội dung tài liệu */
     .doc-scroll {
       flex: 1;
       overflow-y: auto;
       padding: 2rem;
     }
 
-    /* Container render docx */
     .doc-render-wrap {
       max-width: 860px;
       margin: 0 auto;
@@ -992,10 +1492,6 @@
       box-shadow: 0 2px 24px rgba(0, 0, 0, .12);
       overflow: hidden;
       min-height: 400px;
-    }
-
-    /* Style cho nội dung mammoth render */
-    .doc-render-wrap {
       padding: 2.5rem 3rem;
     }
 
@@ -1073,7 +1569,6 @@
       color: #475569;
     }
 
-    /* Loading spinner */
     .doc-loading {
       max-width: 860px;
       margin: 0 auto;
@@ -1105,7 +1600,6 @@
       }
     }
 
-    /* Trạng thái rỗng / lỗi */
     .doc-empty-state {
       max-width: 860px;
       margin: 0 auto;
@@ -1125,10 +1619,164 @@
     .doc-empty-state .es-icon {
       font-size: 3rem;
     }
+
+    /* ══════════════════════════════════════════
+       LIGHTBOX — ZOOM & PAN
+       ══════════════════════════════════════════ */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .lb-bg {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 8, 18, 0.94);
+      backdrop-filter: blur(12px);
+    }
+
+    .lb-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+
+    .lb-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1.25rem;
+      height: 54px;
+      flex-shrink: 0;
+      background: rgba(15, 23, 42, .9);
+      border-bottom: 1px solid rgba(255, 255, 255, .07);
+      gap: 1rem;
+    }
+
+    .lb-toolbar-left,
+    .lb-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .lb-icon-btn {
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: #f8fafc;
+      font-size: 17px;
+      font-weight: 700;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .lb-icon-btn:hover {
+      background: rgba(255, 255, 255, .18);
+    }
+
+    .lb-zoom-pct {
+      font-size: 12px;
+      color: var(--ink-muted);
+      font-weight: 700;
+      min-width: 46px;
+      text-align: center;
+      user-select: none;
+      letter-spacing: .03em;
+    }
+
+    .lb-change-btn {
+      background: rgba(56, 189, 248, .1);
+      border: 1px solid rgba(56, 189, 248, .28);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      padding: .3rem .9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .lb-change-btn:hover {
+      background: rgba(56, 189, 248, .22);
+    }
+
+    .lb-delete-btn {
+      background: rgba(239, 68, 68, .1);
+      border: 1px solid rgba(239, 68, 68, .28);
+      color: #fca5a5;
+      font-size: 13px;
+      font-weight: 600;
+      padding: .3rem .9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .lb-delete-btn:hover {
+      background: rgba(239, 68, 68, .24);
+    }
+
+    .lb-stage {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+    }
+
+    .lb-stage.lb-dragging {
+      cursor: grabbing;
+    }
+
+    #lb-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: top left;
+      user-select: none;
+      pointer-events: none;
+      will-change: transform;
+      display: block;
+    }
+
+    .lb-hint {
+      flex-shrink: 0;
+      text-align: center;
+      padding: .45rem;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .25);
+      background: rgba(15, 23, 42, .65);
+      user-select: none;
+      letter-spacing: .01em;
+    }
   </style>
 </head>
 
-<body>
+<body class="mode-edit">
 
   <nav>
     <a class="nav-logo" href="#">Đỗ Minh Trí</a>
@@ -1217,8 +1865,7 @@
             <div class="si">🗂️</div>
             <div class="st">Ảnh chụp màn hình File Explorer</div>
             <div class="sh">Kéo thả ảnh hoặc click để chọn file</div>
-            <div class="cap">Cấu trúc thư mục</div><button class="del-btn"
-              onclick="delImg('b1a',event)">✕</button><input type="file" accept="image/*">
+            <div class="cap">Cấu trúc thư mục</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1229,15 +1876,13 @@
             <div class="si">📋</div>
             <div class="st">Copy &amp; Paste</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Copy &amp; Paste</div><button class="del-btn"
-              onclick="delImg('b1b',event)">✕</button><input type="file" accept="image/*">
+            <div class="cap">Copy &amp; Paste</div><input type="file" accept="image/*">
           </div>
           <div class="img-slot" id="b1c">
             <div class="si">✂️</div>
             <div class="st">Cut &amp; Paste (Di chuyển)</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Cut &amp; Paste</div><button class="del-btn" onclick="delImg('b1c',event)">✕</button><input
-              type="file" accept="image/*">
+            <div class="cap">Cut &amp; Paste</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1248,15 +1893,13 @@
             <div class="si">✏️</div>
             <div class="st">Đổi tên file (Rename)</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Rename</div><button class="del-btn" onclick="delImg('b1d',event)">✕</button><input
-              type="file" accept="image/*">
+            <div class="cap">Rename</div><input type="file" accept="image/*">
           </div>
           <div class="img-slot" id="b1e">
             <div class="si">🗑️</div>
             <div class="st">Recycle Bin &amp; Restore</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Recycle Bin</div><button class="del-btn" onclick="delImg('b1e',event)">✕</button><input
-              type="file" accept="image/*">
+            <div class="cap">Recycle Bin</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1305,8 +1948,7 @@
             <div class="si">🔍</div>
             <div class="st">Màn hình Google Scholar / arXiv</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Google Scholar search result</div><button class="del-btn"
-              onclick="delImg('b2a',event)">✕</button><input type="file" accept="image/*">
+            <div class="cap">Google Scholar search result</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1317,8 +1959,7 @@
             <div class="si">📊</div>
             <div class="st">Bảng đánh giá hoàn chỉnh (Word / Google Docs)</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Bảng đánh giá nguồn tài liệu</div><button class="del-btn"
-              onclick="delImg('b2b',event)">✕</button><input type="file" accept="image/*">
+            <div class="cap">Bảng đánh giá nguồn tài liệu</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1366,22 +2007,19 @@
             <div class="si">💬</div>
             <div class="st">Prompt Cơ bản</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Kết quả Cơ bản</div><button class="del-btn" onclick="delImg('b3a',event)">✕</button><input
-              type="file" accept="image/*">
+            <div class="cap">Kết quả Cơ bản</div><input type="file" accept="image/*">
           </div>
           <div class="img-slot" id="b3b">
             <div class="si">🔧</div>
             <div class="st">Prompt Cải tiến</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Kết quả Cải tiến</div><button class="del-btn"
-              onclick="delImg('b3b',event)">✕</button><input type="file" accept="image/*">
+            <div class="cap">Kết quả Cải tiến</div><input type="file" accept="image/*">
           </div>
           <div class="img-slot" id="b3c">
             <div class="si">⭐</div>
             <div class="st">Prompt Nâng cao</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Kết quả Nâng cao</div><button class="del-btn"
-              onclick="delImg('b3c',event)">✕</button><input type="file" accept="image/*">
+            <div class="cap">Kết quả Nâng cao</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1392,8 +2030,7 @@
             <div class="si">📋</div>
             <div class="st">Bảng so sánh đầy đủ</div>
             <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Bảng tổng hợp so sánh prompt</div><button class="del-btn"
-              onclick="delImg('b3d',event)">✕</button><input type="file" accept="image/*">
+            <div class="cap">Bảng tổng hợp so sánh prompt</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1438,8 +2075,7 @@
           <div class="img-slot" id="b4a" style="aspect-ratio:16/8">
             <div class="si">📌</div>
             <div class="st">Màn hình Board Trello</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div><button class="del-btn"
-              onclick="delImg('b4a',event)">✕</button><input type="file" accept="image/*">
+            <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1449,14 +2085,12 @@
           <div class="img-slot" id="b4b">
             <div class="si">📝</div>
             <div class="st">Google Docs</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div><button class="del-btn"
-              onclick="delImg('b4b',event)">✕</button><input type="file" accept="image/*">
+            <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
           </div>
           <div class="img-slot" id="b4c">
             <div class="si">📁</div>
             <div class="st">Google Drive</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div><button class="del-btn"
-              onclick="delImg('b4c',event)">✕</button><input type="file" accept="image/*">
+            <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1493,8 +2127,7 @@
           <div class="img-slot" id="b5a">
             <div class="si">🎬</div>
             <div class="st">Thumbnail video Minimax</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div><button class="del-btn"
-              onclick="delImg('b5a',event)">✕</button><input type="file" accept="image/*">
+            <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1503,18 +2136,15 @@
         <div class="img-3col">
           <div class="img-slot" id="b5b">
             <div class="si">🤖</div>
-            <div class="st">Midjourney</div><button class="del-btn" onclick="delImg('b5b',event)">✕</button><input
-              type="file" accept="image/*">
+            <div class="st">Midjourney</div><input type="file" accept="image/*">
           </div>
           <div class="img-slot" id="b5c">
             <div class="si">✨</div>
-            <div class="st">Canva AI / Firefly</div><button class="del-btn"
-              onclick="delImg('b5c',event)">✕</button><input type="file" accept="image/*">
+            <div class="st">Canva AI / Firefly</div><input type="file" accept="image/*">
           </div>
           <div class="img-slot" id="b5d">
             <div class="si">💻</div>
-            <div class="st">Demo C++</div><button class="del-btn" onclick="delImg('b5d',event)">✕</button><input
-              type="file" accept="image/*">
+            <div class="st">Demo C++</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1550,13 +2180,11 @@
         <div class="img-featured">
           <div class="img-slot" id="b6a" style="aspect-ratio:4/3">
             <div class="si">📜</div>
-            <div class="st">Slide có ghi chú AI</div><button class="del-btn"
-              onclick="delImg('b6a',event)">✕</button><input type="file" accept="image/*">
+            <div class="st">Slide có ghi chú AI</div><input type="file" accept="image/*">
           </div>
           <div class="img-slot" id="b6b" style="aspect-ratio:4/3">
             <div class="si">🧭</div>
-            <div class="st">Infographic 7 nguyên tắc</div><button class="del-btn"
-              onclick="delImg('b6b',event)">✕</button><input type="file" accept="image/*">
+            <div class="st">Infographic 7 nguyên tắc</div><input type="file" accept="image/*">
           </div>
         </div>
       </div>
@@ -1613,6 +2241,103 @@
   </footer>
 
   <!-- ═══════════════════════════════════════
+       FORMAT PANEL — chỉnh ảnh thủ công
+       ═══════════════════════════════════════ -->
+  <div id="fmt-panel" class="fmt-panel" style="display:none" role="dialog" aria-label="Format ảnh">
+    <div class="fmt-bg" id="fmt-bg"></div>
+    <div class="fmt-wrap">
+      <div class="fmt-topbar">
+        <span class="fmt-title">✂ Format ảnh &nbsp;<span class="fmt-title-slot" id="fmt-title-slot"></span></span>
+        <div class="fmt-topbar-actions">
+          <button class="fmt-apply-btn" id="fmt-apply-btn">✓ Áp dụng</button>
+          <button class="fmt-cancel-btn" id="fmt-cancel-btn">✕ Hủy</button>
+        </div>
+      </div>
+      <div class="fmt-body">
+        <!-- Preview -->
+        <div class="fmt-preview-area">
+          <div class="fmt-preview-frame" id="fmt-preview-frame">
+            <img id="fmt-preview-img" src="" alt="" draggable="false">
+            <span class="fmt-preview-badge" id="fmt-preview-badge">100%</span>
+          </div>
+          <div class="fmt-preview-hint">Cuộn để zoom · Kéo để căn chỉnh · Nhấp đúp để về mặc định</div>
+        </div>
+        <!-- Controls -->
+        <div class="fmt-controls">
+          <div class="fmt-ctrl-group">
+            <div class="fmt-ctrl-title">Chế độ vừa khung</div>
+            <div class="fmt-fit-row">
+              <button class="fmt-fit-btn active" data-fit="cover">⬛<br>Lấp đầy</button>
+              <button class="fmt-fit-btn" data-fit="contain">⬜<br>Vừa khung</button>
+              <button class="fmt-fit-btn" data-fit="fill">⬤<br>Kéo giãn</button>
+            </div>
+          </div>
+          <div class="fmt-ctrl-group">
+            <div class="fmt-slider-row">
+              <span class="fmt-slider-label">Phóng to / thu nhỏ</span>
+              <span class="fmt-slider-val" id="fmt-scale-val">100%</span>
+            </div>
+            <input type="range" class="fmt-slider" id="fmt-scale-slider" min="20" max="400" value="100" step="1">
+          </div>
+          <div class="fmt-ctrl-group">
+            <div class="fmt-slider-row">
+              <span class="fmt-slider-label">Vị trí ngang (X)</span>
+              <span class="fmt-slider-val" id="fmt-tx-val">0</span>
+            </div>
+            <input type="range" class="fmt-slider" id="fmt-tx-slider" min="-150" max="150" value="0" step="1">
+          </div>
+          <div class="fmt-ctrl-group">
+            <div class="fmt-slider-row">
+              <span class="fmt-slider-label">Vị trí dọc (Y)</span>
+              <span class="fmt-slider-val" id="fmt-ty-val">0</span>
+            </div>
+            <input type="range" class="fmt-slider" id="fmt-ty-slider" min="-150" max="150" value="0" step="1">
+          </div>
+          <div class="fmt-ctrl-group">
+            <div class="fmt-ctrl-title">Căn nhanh</div>
+            <div class="fmt-presets-grid">
+              <button class="fmt-preset-btn" data-s="1" data-tx="0" data-ty="0">⊙ Giữa</button>
+              <button class="fmt-preset-btn" data-s="1.4" data-tx="0" data-ty="-40">↑ Trên</button>
+              <button class="fmt-preset-btn" data-s="1.4" data-tx="0" data-ty="40">↓ Dưới</button>
+              <button class="fmt-preset-btn" data-s="1.4" data-tx="-40" data-ty="0">← Trái</button>
+              <button class="fmt-preset-btn" data-s="1.4" data-tx="40" data-ty="0">→ Phải</button>
+              <button class="fmt-preset-btn" data-s="2" data-tx="0" data-ty="0">🔍 Zoom 2×</button>
+            </div>
+          </div>
+          <button class="fmt-reset-btn" id="fmt-reset-btn">↺ Đặt lại mặc định (Cover)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       LIGHTBOX — ZOOM & PAN
+       ═══════════════════════════════════════ -->
+  <div id="lightbox" class="lightbox" style="display:none" role="dialog" aria-label="Xem ảnh">
+    <div class="lb-bg" id="lb-bg"></div>
+    <div class="lb-wrap">
+      <div class="lb-toolbar">
+        <div class="lb-toolbar-left">
+          <button class="lb-icon-btn" id="lb-zoom-out" title="Thu nhỏ (−)">−</button>
+          <span class="lb-zoom-pct" id="lb-zoom-pct">100%</span>
+          <button class="lb-icon-btn" id="lb-zoom-in" title="Phóng to (+)">+</button>
+          <button class="lb-icon-btn" id="lb-reset" title="Vừa màn hình" style="font-size:13px">⊡</button>
+        </div>
+        <div class="lb-toolbar-right">
+          <button class="lb-change-btn" id="lb-change" title="Tải ảnh mới lên">🔄 Đổi ảnh</button>
+          <button class="lb-delete-btn" id="lb-delete" title="Xóa ảnh này">🗑 Xóa</button>
+          <button class="lb-icon-btn" id="lb-close" title="Đóng (Esc)" style="font-size:13px">✕</button>
+        </div>
+      </div>
+      <div class="lb-stage" id="lb-stage">
+        <img id="lb-img" src="" alt="Ảnh minh chứng" draggable="false">
+      </div>
+      <div class="lb-hint">Cuộn để zoom · Kéo để di chuyển · Nhấp đúp để về vừa màn hình · Esc hoặc click nền để đóng
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
        OVERLAY XEM FILE WORD
        ═══════════════════════════════════════ -->
   <div class="doc-page" id="doc-page">
@@ -1624,14 +2349,11 @@
       </div>
     </div>
     <div class="doc-scroll" id="doc-scroll">
-      <!-- Loading -->
       <div class="doc-loading" id="doc-loading" style="display:none">
         <div class="spin"></div>
         <span>Đang tải tài liệu Word...</span>
       </div>
-      <!-- Render container -->
       <div class="doc-render-wrap" id="doc-render-wrap" style="display:none"></div>
-      <!-- Empty / error -->
       <div class="doc-empty-state" id="doc-empty-state" style="display:none">
         <div class="es-icon">⚠️</div>
         <p id="doc-empty-msg">Không thể đọc file Word này.</p>
@@ -1673,7 +2395,17 @@
     }, { threshold: 0.05 });
     document.querySelectorAll('.bai, .ref-card, .about-block').forEach(c => { c.style.opacity = '0'; io.observe(c); });
 
-    /* ─── 4. CLOUD CONFIG ─── */
+    /* ─── 4. EDIT MODE — đặt editMode = true/false trong code để bật/tắt ─── */
+    const editMode = true;   // ← đổi thành false để khoá toàn bộ chỉnh sửa
+
+    function applyMode() {
+      document.body.classList.toggle('mode-edit', editMode);
+      document.body.classList.toggle('mode-present', !editMode);
+      updateLbEditButtons();
+    }
+    applyMode();
+
+    /* ─── 5. CLOUD CONFIG ─── */
     const IMGBB_API_KEY = "1a04b5e27408dd42b577f339a38c9788";
     const JSONBIN_MASTER_KEY = "$2a$10$kK1wNf5DJyLRtuAhZcdKoONkjp8PWafy8Xea9oP/TV2OE7T7SXN9a";
     const BIN_ID = "6a21760bf5f4af5e29b8022c";
@@ -1693,12 +2425,66 @@
       } catch (e) { }
     }
 
+    /* Format settings per slot: { fitMode, s, tx, ty } */
+    const slotFmt = {};
+    function getFmt(id) {
+      if (!slotFmt[id]) {
+        try {
+          const saved = JSON.parse(localStorage.getItem('portfolio_fmt_' + id) || 'null');
+          slotFmt[id] = saved || { fitMode: 'cover', s: 1, tx: 0, ty: 0 };
+        } catch { slotFmt[id] = { fitMode: 'cover', s: 1, tx: 0, ty: 0 }; }
+      }
+      return slotFmt[id];
+    }
+    function saveFmt(id) {
+      try { localStorage.setItem('portfolio_fmt_' + id, JSON.stringify(slotFmt[id])); } catch { }
+    }
+    function applyFmtToSlot(id) {
+      const slot = document.getElementById(id); if (!slot) return;
+      const img = slot.querySelector('img'); if (!img) return;
+      const f = getFmt(id);
+      if (f.fitMode === 'cover' && f.s === 1 && f.tx === 0 && f.ty === 0) {
+        img.style.objectFit = 'cover';
+        img.style.transform = '';
+        /* also reset inline zoom state */
+        const z = getZS(id); z.s = 1; z.tx = 0; z.ty = 0;
+        slot.classList.remove('zoomed');
+      } else if (f.fitMode === 'contain') {
+        img.style.objectFit = 'contain';
+        img.style.transform = '';
+        const z = getZS(id); z.s = 1; z.tx = 0; z.ty = 0;
+        slot.classList.remove('zoomed');
+      } else if (f.fitMode === 'fill') {
+        img.style.objectFit = 'fill';
+        img.style.transform = '';
+        const z = getZS(id); z.s = 1; z.tx = 0; z.ty = 0;
+        slot.classList.remove('zoomed');
+      } else {
+        /* custom transform */
+        img.style.objectFit = 'cover';
+        img.style.transformOrigin = 'center center';
+        img.style.transform = `translate(${f.tx}px,${f.ty}px) scale(${f.s})`;
+        const z = getZS(id); z.s = f.s; z.tx = f.tx; z.ty = f.ty;
+        if (f.s > 1.005 || Math.abs(f.tx) > 1 || Math.abs(f.ty) > 1) {
+          slot.classList.add('zoomed');
+          const badge = slot.querySelector('.slot-zoom-badge');
+          if (badge) badge.textContent = Math.round(f.s * 100) + '%';
+        } else {
+          slot.classList.remove('zoomed');
+        }
+      }
+    }
+
     function applyImg(id, url) {
       const slot = document.getElementById(id); if (!slot) return;
       let img = slot.querySelector('img');
       if (!img) { img = document.createElement('img'); slot.prepend(img); }
-      img.src = url; slot.classList.add('filled');
+      img.src = url;
+      slot.classList.add('filled');
       localStorage.setItem('portfolio_img_url_' + id, url);
+      /* Auto-format: apply saved format (or default cover) after image loads */
+      img.onload = () => applyFmtToSlot(id);
+      if (img.complete && img.naturalWidth) applyFmtToSlot(id);
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -1714,15 +2500,15 @@
           if (saved) applyImg(id, saved);
         });
       }
-      // Restore tên file Word đã lưu
       ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
         const name = localStorage.getItem('docx_name_' + id);
-        if (name) { setWordReady(id, name); }
+        if (name) setWordReady(id, name);
       });
     });
 
-    /* ─── AVATAR ─── */
+    /* ─── 6. AVATAR ─── */
     document.querySelector('#avatarBox input[type=file]').addEventListener('change', function () {
+      if (!editMode) return;
       const f = this.files[0]; if (!f) return;
       const r = new FileReader();
       r.onload = e => {
@@ -1735,48 +2521,632 @@
       r.readAsDataURL(f);
     });
 
-    /* ─── UPLOAD ẢNH IMGBB ─── */
+    /* ─── 7. IMG SLOT: UPLOAD ─── */
     async function uploadToImgBB(file, slotId) {
       const slot = document.getElementById(slotId);
       if (!file || !file.type.startsWith('image/')) return alert('Vui lòng chỉ tải file ảnh!');
       const loader = document.createElement('div');
       loader.className = 'cloud-loader';
-      loader.innerHTML = '<span>🔄 Connecting Cloud...</span><span style="font-size:11px;opacity:.7">Uploading to ImgBB</span>';
+      loader.innerHTML = '<span>🔄 Đang tải lên...</span><span style="font-size:11px;opacity:.7">ImgBB Cloud</span>';
       slot.appendChild(loader);
       const fd = new FormData(); fd.append('image', file);
       try {
         const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd });
         const d = await res.json();
         if (d.success) { applyImg(slotId, d.data.url); await syncDataToCloud(slotId, d.data.url); }
-        else alert('Lỗi: ' + d.error.message);
+        else alert('Lỗi upload: ' + d.error.message);
       } catch { alert('Không thể kết nối ImgBB!'); }
       finally { loader.remove(); }
     }
 
-    document.querySelectorAll('.img-slot').forEach(slot => {
-      const slotId = slot.getAttribute('id'); if (!slotId) return;
-      slot.addEventListener('dragover', e => { e.preventDefault(); slot.style.borderColor = '#38bdf8'; });
-      slot.addEventListener('dragleave', () => { slot.style.borderColor = ''; });
-      slot.addEventListener('drop', e => { e.preventDefault(); slot.style.borderColor = ''; const f = e.dataTransfer.files[0]; if (f) uploadToImgBB(f, slotId); });
-      const inp = slot.querySelector('input[type=file]');
-      if (inp) { inp.removeAttribute('onchange'); inp.addEventListener('change', function () { if (this.files[0]) uploadToImgBB(this.files[0], slotId); }); }
-    });
-
-    function delImg(id, evt) {
-      if (evt) { evt.stopPropagation(); evt.preventDefault(); }
-      const slot = document.getElementById(id);
+    function delImg(id) {
+      const slot = document.getElementById(id); if (!slot) return;
       const img = slot.querySelector('img'); if (img) img.remove();
-      slot.classList.remove('filled');
+      slot.classList.remove('filled', 'zoomed');
       const inp = slot.querySelector('input[type=file]'); if (inp) inp.value = '';
       localStorage.removeItem('portfolio_img_url_' + id);
       syncDataToCloud(id, '');
     }
 
+    /* ─── 8. INLINE ZOOM / PAN CHO IMG-SLOT ─── */
+    const slotZoomState = {};
+    function getZS(id) {
+      if (!slotZoomState[id]) slotZoomState[id] = { s: 1, tx: 0, ty: 0 };
+      return slotZoomState[id];
+    }
+
+    function applySlotTransform(slot) {
+      const id = slot.id;
+      const img = slot.querySelector('img'); if (!img) return;
+      const z = getZS(id);
+      img.style.transformOrigin = 'center center';
+      if (z.s <= 1.005 && Math.abs(z.tx) < 1 && Math.abs(z.ty) < 1) {
+        img.style.transform = '';
+        slot.classList.remove('zoomed');
+      } else {
+        img.style.transform = `translate(${z.tx}px,${z.ty}px) scale(${z.s})`;
+        slot.classList.add('zoomed');
+        /* Cập nhật badge phần trăm */
+        const badge = slot.querySelector('.slot-zoom-badge');
+        if (badge) badge.textContent = Math.round(z.s * 100) + '%';
+      }
+    }
+
+    function clampSlotPan(slot) {
+      const id = slot.id;
+      const z = getZS(id);
+      /* Khi zoom out dưới 1x, không clamp để user thấy toàn bộ ảnh */
+      if (z.s >= 1) {
+        const rect = slot.getBoundingClientRect();
+        const maxX = rect.width * (z.s - 1) / 2;
+        const maxY = rect.height * (z.s - 1) / 2;
+        z.tx = Math.max(-maxX, Math.min(maxX, z.tx));
+        z.ty = Math.max(-maxY, Math.min(maxY, z.ty));
+      }
+    }
+
+    function resetSlotZoom(slot) {
+      const z = getZS(slot.id);
+      z.s = 1; z.tx = 0; z.ty = 0;
+      applySlotTransform(slot);
+    }
+
+    /* Variables cho drag slot */
+    let sDragId = null, sDragMoved = false;
+    let sDragX0 = 0, sDragY0 = 0, sDragTx0 = 0, sDragTy0 = 0;
+    let sClickTimer = null;
+
+    document.querySelectorAll('.img-slot').forEach(slot => {
+      const slotId = slot.getAttribute('id'); if (!slotId) return;
+      const inp = slot.querySelector('input[type=file]');
+
+      /* Thêm nút reset zoom, badge zoom, và nút Format */
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'slot-zoom-reset';
+      resetBtn.textContent = '⊡ Reset';
+      resetBtn.title = 'Về kích thước gốc (nhấp đúp)';
+      resetBtn.addEventListener('click', e => { e.stopPropagation(); resetSlotZoom(slot); });
+      slot.appendChild(resetBtn);
+
+      const badge = document.createElement('span');
+      badge.className = 'slot-zoom-badge';
+      slot.appendChild(badge);
+
+      /* Nút Format (chỉ hiện trong edit mode, khi đã có ảnh) */
+      const fmtBtn = document.createElement('button');
+      fmtBtn.className = 'slot-fmt-btn';
+      fmtBtn.textContent = '✂ Format';
+      fmtBtn.title = 'Chỉnh format ảnh cho khung này';
+      fmtBtn.addEventListener('click', e => { e.stopPropagation(); openFmtPanel(slotId); });
+      slot.appendChild(fmtBtn);
+
+      /* ── Cuộn chuột = zoom inline ── */
+      slot.addEventListener('wheel', e => {
+        if (!slot.classList.contains('filled')) return;
+        e.preventDefault(); e.stopPropagation();
+        const z = getZS(slotId);
+        const rect = slot.getBoundingClientRect();
+        /* Vị trí con trỏ tương đối tâm slot */
+        const cx = e.clientX - rect.left - rect.width / 2;
+        const cy = e.clientY - rect.top - rect.height / 2;
+        const fac = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+        const newS = Math.min(8, Math.max(0.2, z.s * fac));
+        if (Math.abs(newS - z.s) < 0.001) return;
+        const ratio = newS / z.s;
+        /* Zoom tâm về vị trí con trỏ */
+        z.tx = cx + (z.tx - cx) * ratio;
+        z.ty = cy + (z.ty - cy) * ratio;
+        z.s = newS;
+        clampSlotPan(slot);
+        applySlotTransform(slot);
+      }, { passive: false });
+
+      /* ── Nhấp đúp = reset zoom ── */
+      slot.addEventListener('dblclick', e => {
+        if (!slot.classList.contains('filled')) return;
+        clearTimeout(sClickTimer);
+        e.stopPropagation();
+        resetSlotZoom(slot);
+      });
+
+      /* ── Mousedown = bắt đầu drag ── */
+      slot.addEventListener('mousedown', e => {
+        if (!slot.classList.contains('filled')) return;
+        if (e.button !== 0) return;
+        sDragId = slotId;
+        sDragMoved = false;
+        sDragX0 = e.clientX; sDragY0 = e.clientY;
+        const z = getZS(slotId);
+        sDragTx0 = z.tx; sDragTy0 = z.ty;
+        slot.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+
+      /* ── Click (debounce 180 ms để phân biệt với nhấp đúp) ── */
+      slot.addEventListener('click', e => {
+        if (sDragMoved) return; /* drag, không mở lightbox */
+        if (slot.classList.contains('filled')) {
+          clearTimeout(sClickTimer);
+          sClickTimer = setTimeout(() => {
+            const img = slot.querySelector('img');
+            if (img && img.src) openLightbox(slotId, img.src);
+          }, 180);
+        } else {
+          if (!editMode) return;
+          if (inp) inp.click();
+        }
+      });
+
+      /* File input change */
+      if (inp) {
+        inp.addEventListener('change', function () {
+          if (!editMode) return;
+          if (this.files[0]) uploadToImgBB(this.files[0], slotId);
+        });
+      }
+
+      /* Drag-drop file (edit mode) */
+      slot.addEventListener('dragover', e => {
+        if (!editMode) return;
+        e.preventDefault(); slot.style.borderColor = '#38bdf8';
+      });
+      slot.addEventListener('dragleave', () => { slot.style.borderColor = ''; });
+      slot.addEventListener('drop', e => {
+        e.preventDefault(); slot.style.borderColor = '';
+        if (!editMode) return;
+        const f = e.dataTransfer.files[0];
+        if (f) uploadToImgBB(f, slotId);
+      });
+    });
+
+    /* Global handlers: kéo drag slot */
+    window.addEventListener('mousemove', e => {
+      if (!sDragId) return;
+      const dx = e.clientX - sDragX0, dy = e.clientY - sDragY0;
+      if (!sDragMoved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) sDragMoved = true;
+      if (!sDragMoved) return;
+      const z = getZS(sDragId);
+      z.tx = sDragTx0 + dx;
+      z.ty = sDragTy0 + dy;
+      const slot = document.getElementById(sDragId);
+      if (slot) { clampSlotPan(slot); applySlotTransform(slot); }
+    });
+    window.addEventListener('mouseup', () => {
+      if (!sDragId) return;
+      const slot = document.getElementById(sDragId);
+      if (slot && slot.classList.contains('filled')) {
+        /* Khôi phục cursor phù hợp */
+        const z = getZS(sDragId);
+        slot.style.cursor = z.s > 1 ? 'grab' : '';
+      }
+      sDragId = null;
+    });
+
+    /* Touch: pinch zoom + pan trên mobile */
+    (() => {
+      let tSlotId = null, tPinch = null, tTx0 = 0, tTy0 = 0, tX0 = 0, tY0 = 0;
+      document.querySelectorAll('.img-slot').forEach(slot => {
+        const id = slot.id; if (!id) return;
+        slot.addEventListener('touchstart', e => {
+          if (!slot.classList.contains('filled')) return;
+          if (e.touches.length === 1) {
+            tSlotId = id; tPinch = null;
+            tX0 = e.touches[0].clientX; tY0 = e.touches[0].clientY;
+            const z = getZS(id); tTx0 = z.tx; tTy0 = z.ty;
+          } else if (e.touches.length === 2) {
+            tSlotId = id;
+            tPinch = Math.hypot(
+              e.touches[0].clientX - e.touches[1].clientX,
+              e.touches[0].clientY - e.touches[1].clientY);
+          }
+        }, { passive: true });
+        slot.addEventListener('touchmove', e => {
+          if (tSlotId !== id) return;
+          e.preventDefault();
+          const z = getZS(id);
+          if (e.touches.length === 1 && tPinch === null) {
+            z.tx = tTx0 + (e.touches[0].clientX - tX0);
+            z.ty = tTy0 + (e.touches[0].clientY - tY0);
+            clampSlotPan(slot); applySlotTransform(slot);
+          } else if (e.touches.length === 2 && tPinch !== null) {
+            const rect = slot.getBoundingClientRect();
+            const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left - rect.width / 2;
+            const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top - rect.height / 2;
+            const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            const fac = dist / tPinch;
+            const newS = Math.min(8, Math.max(1, z.s * fac));
+            const ratio = newS / z.s;
+            z.tx = midX + (z.tx - midX) * ratio;
+            z.ty = midY + (z.ty - midY) * ratio;
+            z.s = newS;
+            tPinch = dist;
+            clampSlotPan(slot); applySlotTransform(slot);
+          }
+        }, { passive: false });
+        slot.addEventListener('touchend', () => { tSlotId = null; tPinch = null; });
+      });
+    })();
+
+    /* ─── 8. LIGHTBOX ─── */
+    let lbSlotId = null;
+    let lbScale = 1;
+    let lbTx = 0;
+    let lbTy = 0;
+    let lbDragging = false;
+    let lbDragOX = 0;
+    let lbDragOY = 0;
+    let lbPinchDist = null;
+
+    const lightbox = document.getElementById('lightbox');
+    const lbBg = document.getElementById('lb-bg');
+    const lbStage = document.getElementById('lb-stage');
+    const lbImgEl = document.getElementById('lb-img');
+    const lbZoomPct = document.getElementById('lb-zoom-pct');
+
+    function lbUpdateTransform() {
+      lbImgEl.style.transform = `translate(${lbTx}px,${lbTy}px) scale(${lbScale})`;
+      lbZoomPct.textContent = Math.round(lbScale * 100) + '%';
+    }
+
+    function lbFitToStage() {
+      const sw = lbStage.clientWidth;
+      const sh = lbStage.clientHeight;
+      const iw = lbImgEl.naturalWidth || lbImgEl.width || sw;
+      const ih = lbImgEl.naturalHeight || lbImgEl.height || sh;
+      lbScale = Math.min(sw / iw, sh / ih, 1);
+      lbTx = (sw - iw * lbScale) / 2;
+      lbTy = (sh - ih * lbScale) / 2;
+      lbUpdateTransform();
+    }
+
+    function updateLbEditButtons() {
+      const inEdit = editMode;
+      const changeBtn = document.getElementById('lb-change');
+      const deleteBtn = document.getElementById('lb-delete');
+      if (changeBtn) changeBtn.style.display = inEdit ? '' : 'none';
+      if (deleteBtn) deleteBtn.style.display = inEdit ? '' : 'none';
+    }
+
+    function openLightbox(slotId, imgSrc) {
+      lbSlotId = slotId;
+      lbImgEl.src = '';
+      lightbox.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      updateLbEditButtons();
+
+      lbImgEl.onload = () => {
+        /* Set natural dimensions as CSS size so transform-origin top-left math is correct */
+        lbImgEl.style.width = lbImgEl.naturalWidth + 'px';
+        lbImgEl.style.height = lbImgEl.naturalHeight + 'px';
+        lbFitToStage();
+      };
+      lbImgEl.src = imgSrc;
+    }
+
+    function closeLightbox() {
+      lightbox.style.display = 'none';
+      lbSlotId = null;
+      /* Restore scroll only if doc-page is also closed */
+      if (!document.getElementById('doc-page').classList.contains('open')) {
+        document.body.style.overflow = '';
+      }
+    }
+
+    /* Close on background click */
+    lbBg.addEventListener('click', closeLightbox);
+
+    /* Close button */
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+
+    /* Zoom buttons */
+    document.getElementById('lb-zoom-in').addEventListener('click', () => {
+      const sw = lbStage.clientWidth / 2, sh = lbStage.clientHeight / 2;
+      const factor = 1.3;
+      lbTx = sw - (sw - lbTx) * factor;
+      lbTy = sh - (sh - lbTy) * factor;
+      lbScale = Math.min(12, lbScale * factor);
+      lbUpdateTransform();
+    });
+    document.getElementById('lb-zoom-out').addEventListener('click', () => {
+      const sw = lbStage.clientWidth / 2, sh = lbStage.clientHeight / 2;
+      const factor = 1 / 1.3;
+      lbTx = sw - (sw - lbTx) * factor;
+      lbTy = sh - (sh - lbTy) * factor;
+      lbScale = Math.max(0.05, lbScale * factor);
+      lbUpdateTransform();
+    });
+    document.getElementById('lb-reset').addEventListener('click', lbFitToStage);
+
+    /* Edit-mode actions */
+    document.getElementById('lb-change').addEventListener('click', () => {
+      if (!lbSlotId) return;
+      closeLightbox();
+      const slot = document.getElementById(lbSlotId);
+      if (slot) { const inp = slot.querySelector('input[type=file]'); if (inp) inp.click(); }
+    });
+    document.getElementById('lb-delete').addEventListener('click', () => {
+      if (!lbSlotId) return;
+      const id = lbSlotId;
+      closeLightbox();
+      delImg(id);
+    });
+
+    /* Mouse wheel zoom — centered on cursor */
+    lbStage.addEventListener('wheel', e => {
+      e.preventDefault();
+      const rect = lbStage.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+      const newScale = Math.min(12, Math.max(0.05, lbScale * factor));
+      const ratio = newScale / lbScale;
+      lbTx = cx - (cx - lbTx) * ratio;
+      lbTy = cy - (cy - lbTy) * ratio;
+      lbScale = newScale;
+      lbUpdateTransform();
+    }, { passive: false });
+
+    /* Mouse drag */
+    lbStage.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      lbDragging = true;
+      lbDragOX = e.clientX - lbTx;
+      lbDragOY = e.clientY - lbTy;
+      lbStage.classList.add('lb-dragging');
+    });
+    window.addEventListener('mousemove', e => {
+      if (!lbDragging) return;
+      lbTx = e.clientX - lbDragOX;
+      lbTy = e.clientY - lbDragOY;
+      lbUpdateTransform();
+    });
+    window.addEventListener('mouseup', () => {
+      lbDragging = false;
+      lbStage.classList.remove('lb-dragging');
+    });
+
+    /* Double-click to fit */
+    lbStage.addEventListener('dblclick', lbFitToStage);
+
+    /* Touch: drag + pinch zoom */
+    lbStage.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) {
+        lbDragging = true;
+        lbDragOX = e.touches[0].clientX - lbTx;
+        lbDragOY = e.touches[0].clientY - lbTy;
+        lbPinchDist = null;
+      } else if (e.touches.length === 2) {
+        lbDragging = false;
+        lbPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }, { passive: true });
+
+    lbStage.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (e.touches.length === 1 && lbDragging) {
+        lbTx = e.touches[0].clientX - lbDragOX;
+        lbTy = e.touches[0].clientY - lbDragOY;
+        lbUpdateTransform();
+      } else if (e.touches.length === 2 && lbPinchDist !== null) {
+        const rect = lbStage.getBoundingClientRect();
+        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+        const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = dist / lbPinchDist;
+        const newScale = Math.min(12, Math.max(0.05, lbScale * factor));
+        const ratio = newScale / lbScale;
+        lbTx = midX - (midX - lbTx) * ratio;
+        lbTy = midY - (midY - lbTy) * ratio;
+        lbScale = newScale;
+        lbPinchDist = dist;
+        lbUpdateTransform();
+      }
+    }, { passive: false });
+
+    lbStage.addEventListener('touchend', () => {
+      lbDragging = false;
+      lbPinchDist = null;
+    });
+
+    /* Keyboard */
+    document.addEventListener('keydown', e => {
+      if (lightbox.style.display !== 'none') {
+        if (e.key === 'Escape') { closeLightbox(); return; }
+        if (e.key === '+' || e.key === '=') document.getElementById('lb-zoom-in').click();
+        if (e.key === '-' || e.key === '_') document.getElementById('lb-zoom-out').click();
+        if (e.key === '0') lbFitToStage();
+      }
+    });
+
+    /* ════════════════════════════════════════════
+       FORMAT PANEL — chỉnh ảnh thủ công
+       ════════════════════════════════════════════ */
+    let fmtSlotId = null;
+    let fmtFitMode = 'cover';
+    let fmtS = 1, fmtTx = 0, fmtTy = 0;
+    let fmtDragging = false, fmtDX0 = 0, fmtDY0 = 0, fmtTx0 = 0, fmtTy0 = 0;
+
+    const fmtPanel = document.getElementById('fmt-panel');
+    const fmtFrame = document.getElementById('fmt-preview-frame');
+    const fmtImg = document.getElementById('fmt-preview-img');
+    const fmtBadge = document.getElementById('fmt-preview-badge');
+    const fmtScaleSlider = document.getElementById('fmt-scale-slider');
+    const fmtTxSlider = document.getElementById('fmt-tx-slider');
+    const fmtTySlider = document.getElementById('fmt-ty-slider');
+    const fmtScaleVal = document.getElementById('fmt-scale-val');
+    const fmtTxVal = document.getElementById('fmt-tx-val');
+    const fmtTyVal = document.getElementById('fmt-ty-val');
+
+    function fmtUpdatePreview() {
+      fmtImg.style.objectFit = fmtFitMode === 'cover' ? 'cover'
+        : fmtFitMode === 'contain' ? 'contain' : 'fill';
+      if (fmtFitMode === 'cover') {
+        fmtImg.style.transform = `translate(${fmtTx}px,${fmtTy}px) scale(${fmtS})`;
+        fmtImg.style.transformOrigin = 'center center';
+      } else {
+        fmtImg.style.transform = '';
+      }
+      const pct = Math.round(fmtS * 100);
+      if (fmtBadge) fmtBadge.textContent = pct + '%';
+      if (fmtScaleSlider) fmtScaleSlider.value = pct;
+      if (fmtTxSlider) fmtTxSlider.value = Math.round(fmtTx);
+      if (fmtTySlider) fmtTySlider.value = Math.round(fmtTy);
+      if (fmtScaleVal) fmtScaleVal.textContent = pct + '%';
+      if (fmtTxVal) fmtTxVal.textContent = Math.round(fmtTx);
+      if (fmtTyVal) fmtTyVal.textContent = Math.round(fmtTy);
+      /* Highlight active fit button */
+      document.querySelectorAll('.fmt-fit-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.fit === fmtFitMode));
+    }
+
+    function openFmtPanel(slotId) {
+      const slot = document.getElementById(slotId); if (!slot) return;
+      const img = slot.querySelector('img'); if (!img) return;
+      fmtSlotId = slotId;
+
+      /* Sao chép state hiện tại từ slot */
+      const f = getFmt(slotId);
+      fmtFitMode = f.fitMode || 'cover';
+      fmtS = f.s || 1;
+      fmtTx = f.tx || 0;
+      fmtTy = f.ty || 0;
+
+      /* Thiết lập aspect ratio cho preview frame = aspect ratio của slot */
+      const ar = slot.offsetWidth / slot.offsetHeight;
+      fmtFrame.style.aspectRatio = ar.toFixed(4);
+
+      /* Cập nhật slot label */
+      document.getElementById('fmt-title-slot').textContent = slotId.toUpperCase();
+
+      /* Load ảnh vào preview */
+      fmtImg.src = img.src;
+      fmtImg.style.width = '100%';
+      fmtImg.style.height = '100%';
+
+      fmtUpdatePreview();
+      fmtPanel.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeFmtPanel() {
+      fmtPanel.style.display = 'none';
+      fmtSlotId = null;
+      if (!document.getElementById('doc-page').classList.contains('open') &&
+        document.getElementById('lightbox').style.display === 'none') {
+        document.body.style.overflow = '';
+      }
+    }
+
+    /* Apply: lưu format vào slot */
+    document.getElementById('fmt-apply-btn').addEventListener('click', () => {
+      if (!fmtSlotId) return;
+      const f = getFmt(fmtSlotId);
+      f.fitMode = fmtFitMode;
+      f.s = fmtS;
+      f.tx = fmtTx;
+      f.ty = fmtTy;
+      saveFmt(fmtSlotId);
+      applyFmtToSlot(fmtSlotId);
+      closeFmtPanel();
+    });
+
+    document.getElementById('fmt-cancel-btn').addEventListener('click', closeFmtPanel);
+    document.getElementById('fmt-bg').addEventListener('click', closeFmtPanel);
+
+    /* Reset về mặc định cover */
+    document.getElementById('fmt-reset-btn').addEventListener('click', () => {
+      fmtFitMode = 'cover'; fmtS = 1; fmtTx = 0; fmtTy = 0;
+      fmtUpdatePreview();
+    });
+
+    /* Fit mode buttons */
+    document.querySelectorAll('.fmt-fit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        fmtFitMode = btn.dataset.fit;
+        fmtUpdatePreview();
+      });
+    });
+
+    /* Sliders */
+    fmtScaleSlider.addEventListener('input', () => {
+      fmtS = fmtScaleSlider.value / 100;
+      fmtUpdatePreview();
+    });
+    fmtTxSlider.addEventListener('input', () => {
+      fmtTx = +fmtTxSlider.value;
+      fmtUpdatePreview();
+    });
+    fmtTySlider.addEventListener('input', () => {
+      fmtTy = +fmtTySlider.value;
+      fmtUpdatePreview();
+    });
+
+    /* Preset buttons */
+    document.querySelectorAll('.fmt-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        fmtFitMode = 'cover';
+        fmtS = parseFloat(btn.dataset.s) || 1;
+        fmtTx = parseFloat(btn.dataset.tx) || 0;
+        fmtTy = parseFloat(btn.dataset.ty) || 0;
+        fmtUpdatePreview();
+      });
+    });
+
+    /* Mouse wheel zoom trong preview */
+    fmtFrame.addEventListener('wheel', e => {
+      if (fmtFitMode !== 'cover') return;
+      e.preventDefault();
+      const rect = fmtFrame.getBoundingClientRect();
+      const cx = e.clientX - rect.left - rect.width / 2;
+      const cy = e.clientY - rect.top - rect.height / 2;
+      const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+      const newS = Math.min(8, Math.max(0.2, fmtS * factor));
+      const ratio = newS / fmtS;
+      fmtTx = cx + (fmtTx - cx) * ratio;
+      fmtTy = cy + (fmtTy - cy) * ratio;
+      fmtS = newS;
+      fmtUpdatePreview();
+    }, { passive: false });
+
+    /* Mouse drag trong preview */
+    fmtFrame.addEventListener('mousedown', e => {
+      if (fmtFitMode !== 'cover') return;
+      if (e.button !== 0) return;
+      fmtDragging = true;
+      fmtDX0 = e.clientX; fmtDY0 = e.clientY;
+      fmtTx0 = fmtTx; fmtTy0 = fmtTy;
+      fmtFrame.style.cursor = 'grabbing';
+    });
+    window.addEventListener('mousemove', e => {
+      if (!fmtDragging) return;
+      fmtTx = fmtTx0 + (e.clientX - fmtDX0);
+      fmtTy = fmtTy0 + (e.clientY - fmtDY0);
+      fmtUpdatePreview();
+    });
+    window.addEventListener('mouseup', () => {
+      if (fmtDragging) { fmtDragging = false; fmtFrame.style.cursor = 'grab'; }
+    });
+
+    /* Double-click preview để reset */
+    fmtFrame.addEventListener('dblclick', () => {
+      fmtFitMode = 'cover'; fmtS = 1; fmtTx = 0; fmtTy = 0;
+      fmtUpdatePreview();
+    });
+
+    /* ESC đóng format panel */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && fmtPanel.style.display !== 'none') closeFmtPanel();
+    });
+
     /* ════════════════════════════════════════════
        UPLOAD & XEM FILE WORD (.docx)
        ════════════════════════════════════════════ */
-
-    // Lưu ArrayBuffer của file Word theo bài
     const docxBuffers = {};
 
     function setWordReady(baiId, fileName) {
@@ -1794,8 +3164,7 @@
       if (ext !== 'docx' && ext !== 'doc') { alert('Vui lòng chọn file .docx hoặc .doc'); return; }
       const reader = new FileReader();
       reader.onload = e => {
-        docxBuffers[baiId] = e.target.result; // lưu ArrayBuffer
-        // Lưu tên vào localStorage (không lưu buffer vì quá lớn)
+        docxBuffers[baiId] = e.target.result;
         try { localStorage.setItem('docx_name_' + baiId, file.name); } catch { }
         setWordReady(baiId, file.name);
       };
@@ -1803,15 +3172,20 @@
     }
 
     function wdSelect(input, baiId) {
+      if (!editMode) return;
       if (input.files[0]) wdSetFile(baiId, input.files[0]);
     }
 
-    function wdDragOver(e, el) { e.preventDefault(); el.style.borderColor = '#38bdf8'; }
+    function wdDragOver(e, el) {
+      if (!editMode) return;
+      e.preventDefault(); el.style.borderColor = '#38bdf8';
+    }
     function wdDragLeave(el) { el.style.borderColor = ''; }
     function wdDrop(e, baiId) {
       e.preventDefault();
       const el = document.getElementById('wd-' + baiId);
       if (el) el.style.borderColor = '';
+      if (!editMode) return;
       const f = e.dataTransfer.files[0];
       if (f) wdSetFile(baiId, f);
     }
@@ -1839,15 +3213,12 @@
 
     async function openDoc(baiId, num, title) {
       const buf = docxBuffers[baiId];
-
-      // Hiển thị overlay
       document.getElementById('doc-topbar-num').textContent = num;
       document.getElementById('doc-topbar-title').textContent = title;
       docPage.classList.add('open');
       document.body.style.overflow = 'hidden';
       document.getElementById('doc-scroll').scrollTop = 0;
 
-      // Reset
       docLoading.style.display = 'flex';
       docRender.style.display = 'none';
       docEmpty.style.display = 'none';
@@ -1862,16 +3233,11 @@
 
       try {
         if (typeof mammoth === 'undefined') throw new Error('Thư viện mammoth chưa tải xong, thử F5 lại trang.');
-
         const result = await mammoth.convertToHtml({ arrayBuffer: buf });
         docRender.innerHTML = result.value;
         docLoading.style.display = 'none';
         docRender.style.display = 'block';
-
-        // Hiện cảnh báo nếu có (định dạng bị mất một phần là bình thường)
-        if (result.messages && result.messages.length > 0) {
-          console.info('[mammoth] messages:', result.messages);
-        }
+        if (result.messages && result.messages.length > 0) console.info('[mammoth]', result.messages);
       } catch (err) {
         console.error(err);
         docLoading.style.display = 'none';
@@ -1880,7 +3246,6 @@
       }
     }
 
-    /* Đóng overlay */
     document.getElementById('doc-back').addEventListener('click', () => {
       docPage.classList.remove('open');
       document.body.style.overflow = '';
