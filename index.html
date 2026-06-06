@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -3261,11 +3261,10 @@
           }
         }
 
-        /* 3) slide backgrounds */
+        /* 3) slide backgrounds — lưu vào __pendingSlideBg với string key */
+        window.__pendingSlideBg = window.__pendingSlideBg || {};
         Object.keys(cloudData.slideBg).forEach(idx => {
-          const url = cloudData.slideBg[idx];
-          if (typeof fpApplyBg === 'function') fpApplyBg(parseInt(idx), url);
-          else { window.__pendingSlideBg = window.__pendingSlideBg || {}; window.__pendingSlideBg[idx] = url; }
+          window.__pendingSlideBg[String(idx)] = cloudData.slideBg[idx];
         });
 
         /* 4) docx — tải lại ArrayBuffer từ URL để mammoth render được */
@@ -4480,7 +4479,9 @@
       fpCreateBgTools();
       for (let i = 0; i < TOTAL; i++) {
         fpApplyBgAdjust(i);
-        const cloudUrl = cloudData.slideBg[i] || (window.__pendingSlideBg && window.__pendingSlideBg[i]);
+        const si = String(i); /* JSON key luôn là string */
+        const cloudUrl = (window.__pendingSlideBg && window.__pendingSlideBg[si])
+          || cloudData.slideBg[si];
         if (cloudUrl) fpApplyBg(i, cloudUrl);
         else fpGetBg(i).then(src => fpApplyBg(i, src));
       }
