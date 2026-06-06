@@ -4,5 +4,10 @@
   "slideBg": {
     "1": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-1-Mythic_Talent_full_4466165-1780742735442.jpg"
   },
-  "docx": {}
+  "docx": {
+    "bai1": {
+      "url": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/docx-bai1-Bai1-1780742799669.docx",
+      "name": "Bai1.docx"
+    }
+  }
 }
