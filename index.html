@@ -1898,7 +1898,9 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center center;
       opacity: 0.15;
+      transform-origin: center center;
       mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
       -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
     }
@@ -1942,6 +1944,61 @@
     }
 
     body.mode-present .fp-bg-input {
+      display: none;
+    }
+
+    .fp-bg-tools {
+      position: absolute;
+      bottom: 14px;
+      right: 150px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      background: rgba(13, 15, 16, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    }
+
+    .fp-bg-tool {
+      width: 26px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--ink-light);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s ease;
+    }
+
+    .fp-bg-tool:hover {
+      background: rgba(120, 216, 208, 0.16);
+      border-color: rgba(120, 216, 208, 0.35);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .fp-bg-scale-readout {
+      min-width: 42px;
+      padding: 0 5px;
+      color: var(--ink-muted);
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+      user-select: none;
+    }
+
+    body.mode-present .fp-bg-tools {
       display: none;
     }
 
@@ -3919,6 +3976,77 @@
       const FP_BG_DB = 'portfolio-slide-backgrounds';
       const FP_BG_STORE = 'backgrounds';
       const FP_BG_LOCAL_LIMIT = 1800000;
+      const fpBgAdjust = {};
+
+      function fpGetBgAdjust(idx) {
+        if (!fpBgAdjust[idx]) {
+          try {
+            fpBgAdjust[idx] = JSON.parse(localStorage.getItem('fp_bg_adjust_' + idx) || 'null') || { scale: 1, x: 50, y: 50 };
+          } catch {
+            fpBgAdjust[idx] = { scale: 1, x: 50, y: 50 };
+          }
+        }
+        return fpBgAdjust[idx];
+      }
+
+      function fpSaveBgAdjust(idx) {
+        try { localStorage.setItem('fp_bg_adjust_' + idx, JSON.stringify(fpGetBgAdjust(idx))); } catch { }
+      }
+
+      function fpApplyBgAdjust(idx) {
+        const img = document.getElementById('fpbg-img-' + idx);
+        if (!img) return;
+        const st = fpGetBgAdjust(idx);
+        img.style.objectPosition = `${st.x}% ${st.y}%`;
+        img.style.transform = `scale(${st.scale})`;
+        const readout = document.querySelector(`[data-bg-scale-readout="${idx}"]`);
+        if (readout) readout.textContent = Math.round(st.scale * 100) + '%';
+      }
+
+      function fpChangeBgAdjust(idx, patch) {
+        const st = fpGetBgAdjust(idx);
+        if (patch.scale) st.scale = Math.max(0.6, Math.min(2.4, st.scale + patch.scale));
+        if (patch.x) st.x = Math.max(0, Math.min(100, st.x + patch.x));
+        if (patch.y) st.y = Math.max(0, Math.min(100, st.y + patch.y));
+        if (patch.reset) { st.scale = 1; st.x = 50; st.y = 50; }
+        fpApplyBgAdjust(idx);
+        fpSaveBgAdjust(idx);
+      }
+
+      function fpCreateBgTools() {
+        document.querySelectorAll('.fp-slide').forEach(slide => {
+          const idx = parseInt(slide.dataset.slideIndex);
+          if (Number.isNaN(idx) || slide.querySelector('.fp-bg-tools')) return;
+          const tools = document.createElement('div');
+          tools.className = 'fp-bg-tools';
+          tools.innerHTML = `
+            <button class="fp-bg-tool" type="button" data-bg-act="zoom-out" title="Thu nhỏ nền">−</button>
+            <span class="fp-bg-scale-readout" data-bg-scale-readout="${idx}">100%</span>
+            <button class="fp-bg-tool" type="button" data-bg-act="zoom-in" title="Phóng to nền">+</button>
+            <button class="fp-bg-tool" type="button" data-bg-act="left" title="Dịch nền sang trái">←</button>
+            <button class="fp-bg-tool" type="button" data-bg-act="up" title="Dịch nền lên trên">↑</button>
+            <button class="fp-bg-tool" type="button" data-bg-act="down" title="Dịch nền xuống dưới">↓</button>
+            <button class="fp-bg-tool" type="button" data-bg-act="right" title="Dịch nền sang phải">→</button>
+            <button class="fp-bg-tool" type="button" data-bg-act="reset" title="Đặt lại nền">↺</button>`;
+          tools.addEventListener('click', e => {
+            const btn = e.target.closest('[data-bg-act]');
+            if (!btn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const act = btn.dataset.bgAct;
+            const delta = 6;
+            if (act === 'zoom-out') fpChangeBgAdjust(idx, { scale: -0.06 });
+            if (act === 'zoom-in') fpChangeBgAdjust(idx, { scale: 0.06 });
+            if (act === 'left') fpChangeBgAdjust(idx, { x: -delta });
+            if (act === 'right') fpChangeBgAdjust(idx, { x: delta });
+            if (act === 'up') fpChangeBgAdjust(idx, { y: -delta });
+            if (act === 'down') fpChangeBgAdjust(idx, { y: delta });
+            if (act === 'reset') fpChangeBgAdjust(idx, { reset: true });
+          });
+          slide.appendChild(tools);
+          fpApplyBgAdjust(idx);
+        });
+      }
 
       function fpOpenBgDb() {
         return new Promise((resolve, reject) => {
@@ -3974,6 +4102,7 @@
         if (!img || !src) return;
         img.src = src;
         img.style.display = '';
+        fpApplyBgAdjust(idx);
       }
 
       // Slide bg input
@@ -3992,7 +4121,9 @@
       });
 
       // Restore saved bg images
+      fpCreateBgTools();
       for (let i = 0; i < TOTAL; i++) {
+        fpApplyBgAdjust(i);
         fpGetBg(i).then(src => fpApplyBg(i, src));
       }
 
