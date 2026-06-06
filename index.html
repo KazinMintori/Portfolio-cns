@@ -2894,6 +2894,9 @@
     const JSONBIN_MASTER_KEY = "$2a$10$kK1wNf5DJyLRtuAhZcdKoONkjp8PWafy8Xea9oP/TV2OE7T7SXN9a";
     const BIN_ID = "6a21760bf5f4af5e29b8022c";
 
+    /* cloudMeta: avatar URL, slide bg URLs, docx URLs+names — đồng bộ chung vào JSONBin */
+    const cloudMeta = { avatar: null, slideBg: {}, docx: {} };
+
     async function syncDataToCloud(slotId, url) {
       let d = {};
       document.querySelectorAll('.img-slot').forEach(s => {
@@ -2901,12 +2904,43 @@
         if (saved) d[id] = saved;
       });
       if (slotId) { if (url) d[slotId] = url; else delete d[slotId]; }
+      /* gộp các trường mở rộng */
+      if (cloudMeta.avatar) d.__avatar = cloudMeta.avatar;
+      Object.keys(cloudMeta.slideBg).forEach(k => {
+        const v = cloudMeta.slideBg[k];
+        if (v) d['__slidebg_' + k] = v;
+      });
+      Object.keys(cloudMeta.docx).forEach(k => {
+        const v = cloudMeta.docx[k];
+        if (v && v.url) d['__docx_' + k] = v;
+      });
       try {
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_MASTER_KEY },
           body: JSON.stringify(d)
         });
       } catch (e) { }
+    }
+
+    /* Upload file Word lên Catbox.moe (free, không hết hạn, hỗ trợ docx) */
+    async function uploadDocxToCloud(file) {
+      const fd = new FormData();
+      fd.append('reqtype', 'fileupload');
+      fd.append('fileToUpload', file);
+      const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('Catbox upload failed: ' + res.status);
+      const url = (await res.text()).trim();
+      if (!/^https?:\/\//.test(url)) throw new Error('Catbox trả về URL không hợp lệ: ' + url);
+      return url;
+    }
+
+    /* Upload ảnh bất kỳ (avatar, slide bg) lên ImgBB, trả URL */
+    async function uploadImageToImgBB(file) {
+      const fd = new FormData(); fd.append('image', file);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd });
+      const d = await res.json();
+      if (!d.success) throw new Error(d.error && d.error.message || 'ImgBB upload failed');
+      return d.data.url;
     }
 
     /* Format settings per slot: { fitMode, s, tx, ty } */
@@ -2990,45 +3024,101 @@
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
+      /* fallback: avatar localStorage cũ (chỉ áp dụng tạm trong khi chờ cloud) */
       const savedAv = localStorage.getItem('portfolio_avatar');
       if (savedAv) { const av = document.querySelector('#avatarBox img'); if (av) av.src = savedAv; }
+
+      let cloud = null;
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': JSONBIN_MASTER_KEY } });
         const d = await res.json();
-        if (d.record) Object.keys(d.record).forEach(id => applyImg(id, d.record[id]));
-      } catch {
+        cloud = d.record || null;
+      } catch { cloud = null; }
+
+      if (cloud) {
+        /* 1) ảnh bài tập */
+        Object.keys(cloud).forEach(id => {
+          if (id.startsWith('__')) return;
+          applyImg(id, cloud[id]);
+        });
+        /* 2) avatar */
+        if (cloud.__avatar) {
+          cloudMeta.avatar = cloud.__avatar;
+          const av = document.querySelector('#avatarBox img');
+          if (av) av.src = cloud.__avatar;
+          else {
+            const box = document.getElementById('avatarBox');
+            if (box) { const i = document.createElement('img'); i.src = cloud.__avatar; box.appendChild(i); }
+          }
+        }
+        /* 3) slide backgrounds */
+        Object.keys(cloud).forEach(k => {
+          if (!k.startsWith('__slidebg_')) return;
+          const idx = k.slice('__slidebg_'.length);
+          cloudMeta.slideBg[idx] = cloud[k];
+          /* fpApplyBg có thể chưa tồn tại — gọi qua window khi sẵn sàng */
+          if (typeof fpApplyBg === 'function') fpApplyBg(parseInt(idx), cloud[k]);
+          else window.__pendingSlideBg = window.__pendingSlideBg || {}, window.__pendingSlideBg[idx] = cloud[k];
+        });
+        /* 4) docx — tải lại file từ URL về ArrayBuffer */
+        Object.keys(cloud).forEach(async k => {
+          if (!k.startsWith('__docx_')) return;
+          const baiId = k.slice('__docx_'.length);
+          const meta = cloud[k];
+          if (!meta || !meta.url) return;
+          cloudMeta.docx[baiId] = meta;
+          setWordReady(baiId, meta.name || 'document.docx');
+          try {
+            const r = await fetch(meta.url);
+            if (r.ok) docxBuffers[baiId] = await r.arrayBuffer();
+          } catch (e) { console.warn('[docx] download failed', baiId, e); }
+        });
+      } else {
+        /* offline fallback: localStorage cũ */
         document.querySelectorAll('.img-slot').forEach(s => {
           const id = s.getAttribute('id'), saved = localStorage.getItem('portfolio_img_url_' + id);
           if (saved) applyImg(id, saved);
         });
+        ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
+          const name = localStorage.getItem('docx_name_' + id);
+          const b64 = localStorage.getItem('docx_data_' + id);
+          if (name && b64) {
+            try { docxBuffers[id] = b64ToArrayBuffer(b64); setWordReady(id, name); }
+            catch (e) { setWordReady(id, name); }
+          } else if (name) { setWordReady(id, name); }
+        });
       }
-      ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
-        const name = localStorage.getItem('docx_name_' + id);
-        const b64 = localStorage.getItem('docx_data_' + id);
-        if (name && b64) {
-          try {
-            docxBuffers[id] = b64ToArrayBuffer(b64);
-            setWordReady(id, name);
-          } catch (e) { console.warn('[docx] restore failed', id, e); setWordReady(id, name); }
-        } else if (name) {
-          setWordReady(id, name); // tên còn nhưng data mất (localStorage bị xoá thủ công)
-        }
-      });
     });
 
     /* ─── 6. AVATAR ─── */
-    document.querySelector('#avatarBox input[type=file]').addEventListener('change', function () {
+    document.querySelector('#avatarBox input[type=file]').addEventListener('change', async function () {
       if (!editMode) return;
       const f = this.files[0]; if (!f) return;
+      const box = document.getElementById('avatarBox');
+      /* hiển thị preview ngay từ base64 trong khi upload */
       const r = new FileReader();
       r.onload = e => {
-        const box = document.getElementById('avatarBox');
         let img = box.querySelector('img');
         if (!img) { img = document.createElement('img'); box.appendChild(img); }
         img.src = e.target.result;
-        localStorage.setItem('portfolio_avatar', e.target.result);
+        try { localStorage.setItem('portfolio_avatar', e.target.result); } catch { }
       };
       r.readAsDataURL(f);
+      /* upload lên ImgBB rồi sync URL */
+      const loader = document.createElement('div');
+      loader.className = 'cloud-loader';
+      loader.innerHTML = '<span>🔄 Đang tải avatar...</span><span style="font-size:11px;opacity:.7">ImgBB Cloud</span>';
+      box.appendChild(loader);
+      try {
+        const url = await uploadImageToImgBB(f);
+        let img = box.querySelector('img');
+        if (!img) { img = document.createElement('img'); box.appendChild(img); }
+        img.src = url;
+        cloudMeta.avatar = url;
+        await syncDataToCloud();
+      } catch (e) {
+        alert('Lỗi upload avatar: ' + e.message);
+      } finally { loader.remove(); }
     });
 
     /* ─── 7. IMG SLOT: UPLOAD ─── */
@@ -3689,8 +3779,9 @@
       const ext = file.name.split('.').pop().toLowerCase();
       if (ext !== 'docx' && ext !== 'doc') { alert('Vui lòng chọn file .docx hoặc .doc'); return; }
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = async e => {
         docxBuffers[baiId] = e.target.result;
+        /* cache offline (best-effort) */
         try {
           localStorage.setItem('docx_name_' + baiId, file.name);
           localStorage.setItem('docx_data_' + baiId, arrayBufferToB64(e.target.result));
@@ -3698,6 +3789,22 @@
           console.warn('[docx] Không lưu được vào localStorage (file có thể quá lớn):', err.message);
         }
         setWordReady(baiId, file.name);
+
+        /* upload lên Catbox để truy cập được từ thiết bị khác */
+        const drop = document.getElementById('wd-' + baiId);
+        const nameEl = document.getElementById('wn-' + baiId);
+        const oldText = nameEl ? nameEl.textContent : '';
+        if (nameEl) nameEl.textContent = '⏳ Đang tải lên cloud...';
+        try {
+          const url = await uploadDocxToCloud(file);
+          cloudMeta.docx[baiId] = { url, name: file.name };
+          await syncDataToCloud();
+          if (nameEl) nameEl.textContent = '📎 ' + file.name;
+        } catch (err) {
+          console.warn('[docx] cloud upload failed', err);
+          if (nameEl) nameEl.textContent = oldText || ('📎 ' + file.name);
+          alert('Không upload được lên cloud (file vẫn lưu trên máy này): ' + err.message);
+        }
       };
       reader.readAsArrayBuffer(file);
     }
@@ -3726,6 +3833,8 @@
       delete docxBuffers[baiId];
       localStorage.removeItem('docx_name_' + baiId);
       localStorage.removeItem('docx_data_' + baiId);
+      delete cloudMeta.docx[baiId];
+      syncDataToCloud();
       const drop = document.getElementById('wd-' + baiId);
       const nameEl = document.getElementById('wn-' + baiId);
       const btn = document.getElementById('vb-' + baiId);
@@ -4108,11 +4217,12 @@
         fpApplyBgAdjust(idx);
       }
 
-      // Slide bg input
+      // Slide bg input — upload lên ImgBB rồi sync URL vào JSONBin
       document.querySelectorAll('input[data-slide-bg]').forEach(inp => {
-        inp.addEventListener('change', function () {
+        inp.addEventListener('change', async function () {
           const idx = parseInt(this.dataset.slideBg);
           const file = this.files[0]; if (!file) return;
+          /* preview ngay từ dataURL */
           const reader = new FileReader();
           reader.onload = ev => {
             const dataUrl = ev.target.result;
@@ -4120,14 +4230,26 @@
             fpPutBg(idx, file, dataUrl);
           };
           reader.readAsDataURL(file);
+          /* upload cloud */
+          try {
+            const url = await uploadImageToImgBB(file);
+            cloudMeta.slideBg[idx] = url;
+            fpApplyBg(idx, url);
+            await syncDataToCloud();
+          } catch (e) {
+            console.warn('[slide-bg] cloud upload failed', e);
+            alert('Không upload được ảnh nền lên cloud (vẫn lưu trên máy này): ' + e.message);
+          }
         });
       });
 
-      // Restore saved bg images
+      // Restore saved bg images — ưu tiên cloud URL nếu có
       fpCreateBgTools();
       for (let i = 0; i < TOTAL; i++) {
         fpApplyBgAdjust(i);
-        fpGetBg(i).then(src => fpApplyBg(i, src));
+        const cloudUrl = cloudMeta.slideBg[i] || (window.__pendingSlideBg && window.__pendingSlideBg[i]);
+        if (cloudUrl) fpApplyBg(i, cloudUrl);
+        else fpGetBg(i).then(src => fpApplyBg(i, src));
       }
 
       updateUI();
