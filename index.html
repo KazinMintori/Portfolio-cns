@@ -3261,7 +3261,7 @@
           }
         }
 
-        /* 3) slide backgrounds — lưu vào __pendingSlideBg với string key */
+        /* 3) slide backgrounds — lưu string key để restore loop đọc đúng */
         window.__pendingSlideBg = window.__pendingSlideBg || {};
         Object.keys(cloudData.slideBg).forEach(idx => {
           window.__pendingSlideBg[String(idx)] = cloudData.slideBg[idx];
