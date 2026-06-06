@@ -1,5 +1,9 @@
 {
-  "slots": {},
+  "slots": {
+    "b1a": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slot-b1a-c344fcb9-fdd2-4bd8-b771-07143fb4b3df-1780742998612.jpg",
+    "b1b": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slot-b1b-7ed9d229-9f1e-4411-badf-4c7265504658-1780742989079.jpg",
+    "b1c": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slot-b1c-446f253f-72fe-4477-9e6c-85f11020022e-1780742985806.jpg"
+  },
   "avatar": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/avatar-KADE9547-1780742962434.jpg",
   "slideBg": {
     "1": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-1-Mythic_Talent_full_4466165-1780744351472.jpg",
