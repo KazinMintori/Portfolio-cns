@@ -41,7 +41,7 @@
   },
   "slotFmt": {
     "b1a": {
-      "fitMode": "cover",
+      "fitMode": "contain",
       "s": 1,
       "tx": 0,
       "ty": 0
