@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -3023,6 +3023,14 @@
       btn.id = 'gh-settings-btn';
       btn.type = 'button';
       btn.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:9999;padding:.55rem 1rem;background:#181c1f;color:#78d8d0;border:1px solid #2b3335;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.4);';
+      /* Ẩn nút khi editMode = false (body.mode-present) */
+      const styleId = 'gh-btn-style';
+      if (!document.getElementById(styleId)) {
+        const s = document.createElement('style');
+        s.id = styleId;
+        s.textContent = 'body.mode-present #gh-settings-btn{display:none!important;}';
+        document.head.appendChild(s);
+      }
       btn.onclick = openCloudSettings;
       document.body.appendChild(btn);
       updateCloudSettingsBtn();
