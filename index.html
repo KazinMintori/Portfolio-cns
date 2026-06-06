@@ -2530,22 +2530,7 @@
                 </div>
               </div>
             </div>
-            <div class="img-block">
-              <div class="img-block-label">Google Docs &amp; Drive</div>
-              <div class="img-2col">
-                <div class="img-slot" id="b4b">
-                  <div class="si">📝</div>
-                  <div class="st">Google Docs</div>
-                  <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
-                </div>
-                <div class="img-slot" id="b4c">
-                  <div class="si">📁</div>
-                  <div class="st">Google Drive</div>
-                  <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
-                </div>
-              </div>
-            </div>
-            <div class="tags"><span class="tag">Trello</span><span class="tag">Google Workspace</span><span
+            <div class="tags"><span class="tag">Trello</span><span class="tag">Làm việc nhóm</span><span
                 class="tag">Quản
                 lý dự án</span></div>
             <div class="word-section">
@@ -2880,7 +2865,7 @@
     document.querySelectorAll('.bai, .ref-card, .about-block').forEach(c => { c.style.opacity = '0'; io.observe(c); });
 
     /* ─── 4. EDIT MODE — đặt editMode = true/false trong code để bật/tắt ─── */
-    const editMode = true;   // ← đổi thành false để khoá toàn bộ chỉnh sửa
+    const editMode = false;  // ← đổi thành true nếu cần chỉnh sửa trực tiếp trên trang
 
     function applyMode() {
       document.body.classList.toggle('mode-edit', editMode);

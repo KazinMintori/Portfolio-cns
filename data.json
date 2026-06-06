@@ -1,22 +1,41 @@
 {
   "slots": {
-    "b1a": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slot-b1a-c344fcb9-fdd2-4bd8-b771-07143fb4b3df-1780742998612.jpg",
-    "b1b": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slot-b1b-7ed9d229-9f1e-4411-badf-4c7265504658-1780742989079.jpg",
-    "b1c": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slot-b1c-446f253f-72fe-4477-9e6c-85f11020022e-1780742985806.jpg"
+    "b1a": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b1a.jpg",
+    "b1b": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b1b.jpg",
+    "b1c": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b1c.jpg",
+    "b1d": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b1d.jpg",
+    "b3a": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b3a.jpg",
+    "b3b": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b3b.jpg",
+    "b3c": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b3c.jpg",
+    "b3d": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b3d.jpg",
+    "b4a": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b4a.jpg"
   },
-  "avatar": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/avatar-KADE9547-1780742962434.jpg",
+  "avatar": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/avatar.JPG",
   "slideBg": {
-    "1": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-1-Mythic_Talent_full_4466165-1780744351472.jpg",
-    "2": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-2-wp15752241-1780744418756.jpg"
+    "1": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-1.jpg",
+    "2": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-2.jpg",
+    "3": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-3.jpg",
+    "4": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-4.jpg",
+    "5": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-5.png",
+    "6": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-6.jpg",
+    "7": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-7.jpg"
   },
   "docx": {
     "bai1": {
-      "url": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/docx-bai1-Bai1-1780742799669.docx",
+      "url": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/Bai1.docx",
       "name": "Bai1.docx"
     },
     "bai2": {
-      "url": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/docx-bai2-Bai2-1780743569501.docx",
+      "url": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/Bai2.docx",
       "name": "Bai2.docx"
+    },
+    "bai3": {
+      "url": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/Bai3.docx",
+      "name": "Bai3.docx"
+    },
+    "bai4": {
+      "url": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/Bai4.docx",
+      "name": "Bai4.docx"
     }
   }
 }
