@@ -13,13 +13,13 @@
   },
   "avatar": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/avatar.JPG",
   "slideBg": {
-    "1": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-1.jpg",
-    "2": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-2.jpg",
-    "3": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-3.jpg",
-    "4": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-4.jpg",
-    "5": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-5.png",
-    "6": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-6.jpg",
-    "7": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slidebg-7.jpg"
+    "1": "https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/slidebg-1.jpg",
+    "2": "https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/slidebg-2.jpg",
+    "3": "https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/slidebg-3.jpg",
+    "4": "https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/slidebg-4.jpg",
+    "5": "https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/slidebg-5.png",
+    "6": "https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/slidebg-6.jpg",
+    "7": "https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/slidebg-7.jpg"
   },
   "docx": {
     "bai1": {

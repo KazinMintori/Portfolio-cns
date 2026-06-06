@@ -2916,9 +2916,13 @@
     function ghHasToken() { return !!ghGetToken(); }
     function ghAuthHeaders() { const t = ghGetToken(); return t ? { Authorization: 'token ' + t } : {}; }
 
-    /* URL public của 1 file trong repo — qua jsDelivr CDN (nhanh, global, không cần đợi Pages rebuild) */
+    /* URL public của 1 file trong repo — qua jsDelivr CDN (nhanh cho ảnh/JS/CSS) */
     function ghPublicUrl(path) {
       return `https://cdn.jsdelivr.net/gh/${GH_OWNER}/${GH_REPO}@${GH_BRANCH}/${path}`;
+    }
+    /* URL raw (dùng cho .docx và binary không phải web asset — jsDelivr chặn các loại này) */
+    function ghRawUrl(path) {
+      return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${path}`;
     }
 
     function fileToBase64(file) {
@@ -2966,7 +2970,10 @@
       const path = `${GH_UPLOAD_DIR}/${prefix}-${stem}-${Date.now()}.${ext}`;
       const b64 = await fileToBase64(file);
       await ghPutFile(path, b64, `upload: ${path}`);
-      return { path, url: ghPublicUrl(path) };
+      /* jsDelivr chặn .docx và các binary không phải web asset → dùng raw URL */
+      const NON_CDN = ['docx', 'doc', 'pdf', 'zip', 'xlsx', 'pptx'];
+      const url = NON_CDN.includes(ext) ? ghRawUrl(path) : ghPublicUrl(path);
+      return { path, url };
     }
 
     /* Trạng thái — nguồn duy nhất của sự thật, đồng bộ với /data.json trên repo */
@@ -3228,6 +3235,18 @@
           });
         }
         cloudData = migrated;
+
+        /* Migration: đổi URL docx từ jsDelivr → raw.githubusercontent
+           (jsDelivr HTTP 403 với .docx — chỉ phục vụ web assets) */
+        Object.keys(cloudData.docx).forEach(id => {
+          const meta = cloudData.docx[id];
+          if (meta && meta.url && meta.url.includes('cdn.jsdelivr.net')) {
+            meta.url = meta.url.replace(
+              /https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^@]+)@([^/]+)\//,
+              'https://raw.githubusercontent.com/$1/$2/$3/'
+            );
+          }
+        });
 
         /* 1) ảnh bài tập */
         Object.keys(cloudData.slots).forEach(id => applyImg(id, cloudData.slots[id]));
