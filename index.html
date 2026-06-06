@@ -2895,11 +2895,11 @@
        Trạng thái (URL nào ứng với slot nào) lưu trong /data.json ở gốc repo.
        Người xem không cần token; chỉ chủ trang cần token khi UPLOAD.
        ────────────────────────────────────────────────────────────────────── */
-    const GH_OWNER       = 'kazinmintori';
-    const GH_REPO        = 'Portfolio-cns';
-    const GH_BRANCH      = 'main';
-    const GH_DATA_PATH   = 'data.json';
-    const GH_UPLOAD_DIR  = 'assets/uploads';
+    const GH_OWNER = 'kazinmintori';
+    const GH_REPO = 'Portfolio-cns';
+    const GH_BRANCH = 'main';
+    const GH_DATA_PATH = 'data.json';
+    const GH_UPLOAD_DIR = 'assets/uploads';
 
     function ghGetToken() { return localStorage.getItem('gh_pat') || ''; }
     function ghSetToken(t) { if (t) localStorage.setItem('gh_pat', t); else localStorage.removeItem('gh_pat'); updateCloudSettingsBtn(); }
@@ -2995,14 +2995,14 @@
           const text = await r.text();
           if (text.trim()) return JSON.parse(text);
         }
-      } catch {}
+      } catch { }
       /* Fallback: API GitHub (xử lý trường hợp data.json mới commit, Pages chưa build xong) */
       try {
         const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_DATA_PATH}?ref=${GH_BRANCH}`, {
           headers: { ...ghAuthHeaders(), Accept: 'application/vnd.github.raw' }
         });
         if (r.ok) return await r.json();
-      } catch {}
+      } catch { }
       return null;
     }
 
