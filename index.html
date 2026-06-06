@@ -121,7 +121,9 @@
     body.mode-present .img-slot:not(.filled):hover {
       transform: none !important;
       border-color: var(--border) !important;
-      background: rgba(30, 41, 59, .4) !important;
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.42)),
+        rgba(248, 250, 252, 0.08) !important;
       box-shadow: none !important;
     }
 
@@ -505,8 +507,10 @@
       position: relative;
       border-radius: 12px;
       overflow: hidden;
-      border: 1px dashed var(--border);
-      background: rgba(30, 41, 59, 0.4);
+      border: 1px dashed rgba(226, 232, 240, 0.28);
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.42)),
+        rgba(248, 250, 252, 0.08);
       aspect-ratio: 4/3;
       display: flex;
       flex-direction: column;
@@ -515,13 +519,24 @@
       cursor: pointer;
       transition: all .3s;
       min-height: 120px;
+      isolation: isolate;
+      backdrop-filter: blur(14px) saturate(1.08);
+      -webkit-backdrop-filter: blur(14px) saturate(1.08);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 14px 34px rgba(2, 6, 23, 0.32);
     }
 
     .img-slot:hover {
       border-color: var(--accent);
-      background: rgba(30, 41, 59, 0.8);
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.58)),
+        rgba(56, 189, 248, 0.10);
       transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 18px 38px rgba(2, 6, 23, 0.42),
+        0 0 0 1px rgba(56, 189, 248, 0.12);
     }
 
     .img-slot img {
@@ -532,12 +547,14 @@
       object-fit: cover;
       border-radius: 12px;
       z-index: 1;
+      background: rgba(15, 23, 42, 0.9);
     }
 
     .img-slot .si {
       font-size: 24px;
       opacity: .7;
       margin-bottom: 8px;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
     }
 
     .img-slot .st {
@@ -547,6 +564,7 @@
       padding: 0 1rem;
       line-height: 1.5;
       font-weight: 500;
+      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.48);
     }
 
     .img-slot .sh {
@@ -555,6 +573,7 @@
       text-align: center;
       margin-top: 6px;
       padding: 0 .75rem;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
     }
 
     /* Inputs in img-slots: pointer-events off — clicks handled by JS */
@@ -591,6 +610,12 @@
     /* Zoom hint overlay on filled images */
     .img-slot.filled {
       cursor: zoom-in;
+      border-style: solid;
+      border-color: rgba(226, 232, 240, 0.26);
+      background: rgba(15, 23, 42, 0.82);
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 16px 36px rgba(2, 6, 23, 0.38);
     }
 
     .img-slot.filled .si,
@@ -3851,6 +3876,66 @@
         if (Math.abs(dy) > 55 && Date.now() - tT0 < 600) { if (dy > 0) next(); else prev(); }
       }, { passive: true });
 
+      const FP_BG_DB = 'portfolio-slide-backgrounds';
+      const FP_BG_STORE = 'backgrounds';
+      const FP_BG_LOCAL_LIMIT = 1800000;
+
+      function fpOpenBgDb() {
+        return new Promise((resolve, reject) => {
+          if (!window.indexedDB) { reject(new Error('IndexedDB unavailable')); return; }
+          const req = indexedDB.open(FP_BG_DB, 1);
+          req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains(FP_BG_STORE)) db.createObjectStore(FP_BG_STORE);
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error || new Error('Cannot open IndexedDB'));
+        });
+      }
+
+      async function fpPutBg(idx, file, dataUrl) {
+        const key = 'fp_bg_' + idx;
+        try {
+          localStorage.removeItem(key);
+          if (dataUrl && dataUrl.length <= FP_BG_LOCAL_LIMIT) localStorage.setItem(key, dataUrl);
+        } catch { }
+
+        try {
+          const db = await fpOpenBgDb();
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction(FP_BG_STORE, 'readwrite');
+            tx.objectStore(FP_BG_STORE).put(file, key);
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+          });
+          db.close();
+        } catch { }
+      }
+
+      async function fpGetBg(idx) {
+        const key = 'fp_bg_' + idx;
+        try {
+          const db = await fpOpenBgDb();
+          const blob = await new Promise((resolve, reject) => {
+            const tx = db.transaction(FP_BG_STORE, 'readonly');
+            const req = tx.objectStore(FP_BG_STORE).get(key);
+            req.onsuccess = () => resolve(req.result || null);
+            req.onerror = () => reject(req.error);
+          });
+          db.close();
+          if (blob) return URL.createObjectURL(blob);
+        } catch { }
+
+        try { return localStorage.getItem(key); } catch { return null; }
+      }
+
+      function fpApplyBg(idx, src) {
+        const img = document.getElementById('fpbg-img-' + idx);
+        if (!img || !src) return;
+        img.src = src;
+        img.style.display = '';
+      }
+
       // Slide bg input
       document.querySelectorAll('input[data-slide-bg]').forEach(inp => {
         inp.addEventListener('change', function () {
@@ -3858,9 +3943,9 @@
           const file = this.files[0]; if (!file) return;
           const reader = new FileReader();
           reader.onload = ev => {
-            const img = document.getElementById('fpbg-img-' + idx);
-            if (img) { img.src = ev.target.result; img.style.display = ''; }
-            try { localStorage.setItem('fp_bg_' + idx, ev.target.result); } catch { }
+            const dataUrl = ev.target.result;
+            fpApplyBg(idx, dataUrl);
+            fpPutBg(idx, file, dataUrl);
           };
           reader.readAsDataURL(file);
         });
@@ -3868,10 +3953,7 @@
 
       // Restore saved bg images
       for (let i = 0; i < TOTAL; i++) {
-        try {
-          const s = localStorage.getItem('fp_bg_' + i);
-          if (s) { const img = document.getElementById('fpbg-img-' + i); if (img) { img.src = s; img.style.display = ''; } }
-        } catch { }
+        fpGetBg(i).then(src => fpApplyBg(i, src));
       }
 
       updateUI();
