@@ -45,6 +45,12 @@
       "s": 1,
       "tx": 0,
       "ty": 0
+    },
+    "b1e": {
+      "fitMode": "contain",
+      "s": 1,
+      "tx": 0,
+      "ty": 0
     }
   },
   "bgAdjust": {}
