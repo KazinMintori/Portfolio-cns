@@ -11,15 +11,15 @@
   <script src="https://cdn.jsdelivr.net/npm/mammoth@1/mammoth.browser.min.js"></script>
   <style>
     :root {
-      --bg: #0f172a;
-      --bg-card: #1e293b;
-      --ink: #f8fafc;
-      --ink-light: #cbd5e1;
-      --ink-muted: #64748b;
-      --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.4);
-      --border: #334155;
-      --tag-bg: rgba(56, 189, 248, 0.1);
+      --bg: #0d0f10;
+      --bg-card: #181c1f;
+      --ink: #f3f7f7;
+      --ink-light: #c8d1d1;
+      --ink-muted: #778383;
+      --accent: #78d8d0;
+      --accent-glow: rgba(120, 216, 208, 0.34);
+      --border: #2b3335;
+      --tag-bg: rgba(120, 216, 208, 0.12);
     }
 
     *,
@@ -50,10 +50,11 @@
       left: 0;
       right: 0;
       z-index: 100;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(8, 8, 10, 0.72);
+      backdrop-filter: blur(18px) saturate(1.15);
+      -webkit-backdrop-filter: blur(18px) saturate(1.15);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -546,8 +547,32 @@
       height: 100%;
       object-fit: cover;
       border-radius: 12px;
+      z-index: 2;
+      background: transparent;
+    }
+
+    .img-slot .slot-bg-fill {
+      position: absolute;
+      inset: -18px;
       z-index: 1;
-      background: rgba(15, 23, 42, 0.9);
+      pointer-events: none;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      filter: blur(18px) saturate(1.12);
+      transform: scale(1.06);
+      opacity: 0;
+      transition: opacity .28s ease;
+    }
+
+    .img-slot.filled.fit-contain .slot-bg-fill {
+      opacity: .82;
+    }
+
+    .img-slot.filled.fit-cover .slot-bg-fill,
+    .img-slot.filled.fit-fill .slot-bg-fill,
+    .img-slot.filled.fit-custom .slot-bg-fill {
+      opacity: .18;
     }
 
     .img-slot .si {
@@ -2838,27 +2863,44 @@
     function saveFmt(id) {
       try { localStorage.setItem('portfolio_fmt_' + id, JSON.stringify(slotFmt[id])); } catch { }
     }
+    function setSlotFitClass(slot, fitMode) {
+      slot.classList.remove('fit-cover', 'fit-contain', 'fit-fill', 'fit-custom');
+      slot.classList.add('fit-' + fitMode);
+    }
+    function setSlotBlurBg(slot, url) {
+      let bg = slot.querySelector('.slot-bg-fill');
+      if (!bg) {
+        bg = document.createElement('div');
+        bg.className = 'slot-bg-fill';
+        slot.insertBefore(bg, slot.firstChild);
+      }
+      bg.style.backgroundImage = `url("${String(url).replace(/"/g, '\\"')}")`;
+    }
     function applyFmtToSlot(id) {
       const slot = document.getElementById(id); if (!slot) return;
       const img = slot.querySelector('img'); if (!img) return;
       const f = getFmt(id);
       if (f.fitMode === 'cover' && f.s === 1 && f.tx === 0 && f.ty === 0) {
+        setSlotFitClass(slot, 'cover');
         img.style.objectFit = 'cover';
         img.style.transform = '';
         /* also reset inline zoom state */
         const z = getZS(id); z.s = 1; z.tx = 0; z.ty = 0;
         slot.classList.remove('zoomed');
       } else if (f.fitMode === 'contain') {
+        setSlotFitClass(slot, 'contain');
         img.style.objectFit = 'contain';
         img.style.transform = '';
         const z = getZS(id); z.s = 1; z.tx = 0; z.ty = 0;
         slot.classList.remove('zoomed');
       } else if (f.fitMode === 'fill') {
+        setSlotFitClass(slot, 'fill');
         img.style.objectFit = 'fill';
         img.style.transform = '';
         const z = getZS(id); z.s = 1; z.tx = 0; z.ty = 0;
         slot.classList.remove('zoomed');
       } else {
+        setSlotFitClass(slot, 'custom');
         /* custom transform */
         img.style.objectFit = 'cover';
         img.style.transformOrigin = 'center center';
@@ -2879,6 +2921,7 @@
       let img = slot.querySelector('img');
       if (!img) { img = document.createElement('img'); slot.prepend(img); }
       img.src = url;
+      setSlotBlurBg(slot, url);
       slot.classList.add('filled');
       localStorage.setItem('portfolio_img_url_' + id, url);
       /* Auto-format: apply saved format (or default cover) after image loads */
