@@ -130,17 +130,20 @@
     }
 
     body.mode-present .word-drop:not(.has-file) {
-      pointer-events: none;
-      opacity: 0.35;
-      cursor: default;
+      display: none;
     }
 
     body.mode-present .word-drop.has-file {
       cursor: default;
+      pointer-events: none;
     }
 
     body.mode-present .wd-del {
       display: none !important;
+    }
+
+    body.mode-present .wd-hint {
+      display: none;
     }
 
     body.mode-present .avatar-circle {
@@ -1776,450 +1779,850 @@
       user-select: none;
       letter-spacing: .01em;
     }
+
+    /* ══════════════════════════════════════════════════════
+       FULLPAGE SLIDE SYSTEM
+       ══════════════════════════════════════════════════════ */
+    html,
+    body {
+      overflow: hidden !important;
+      height: 100%;
+    }
+
+    #fp-container {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .fp-slide {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      will-change: transform;
+      transform: translateY(100%);
+      transition: transform 0.85s cubic-bezier(0.77, 0, 0.18, 1);
+      background: var(--bg);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, .3) transparent;
+    }
+
+    .fp-slide::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .fp-slide::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, .3);
+      border-radius: 2px;
+    }
+
+    .fp-slide.fp-active {
+      transform: translateY(0%);
+      z-index: 2;
+    }
+
+    .fp-slide.fp-above {
+      transform: translateY(-100%);
+      z-index: 1;
+    }
+
+    /* Bg layer */
+    .fp-bg-layer {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      margin-bottom: -100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .fp-bg-layer img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.15;
+      mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+    }
+
+    .fp-inner {
+      position: relative;
+      z-index: 1;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Bg upload button */
+    .fp-bg-input {
+      position: absolute;
+      bottom: 14px;
+      right: 70px;
+      z-index: 20;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: rgba(56, 189, 248, 0.8);
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fp-bg-input:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .fp-bg-input input {
+      display: none;
+    }
+
+    body.mode-present .fp-bg-input {
+      display: none;
+    }
+
+    /* Neon arrows */
+    .fp-arrows {
+      position: fixed;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 9000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: all;
+    }
+
+    .fp-arrow {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      padding: 0;
+      transition: transform 0.2s ease;
+    }
+
+    .fp-arrow:hover {
+      transform: scale(1.3);
+    }
+
+    .fp-arrow:active {
+      transform: scale(0.88);
+    }
+
+    .fp-arrow svg {
+      width: 30px;
+      height: 30px;
+      filter: drop-shadow(0 0 7px #38bdf8) drop-shadow(0 0 14px #818cf8);
+      transition: filter 0.2s;
+    }
+
+    .fp-arrow:hover svg {
+      filter: drop-shadow(0 0 12px #38bdf8) drop-shadow(0 0 24px #818cf8) drop-shadow(0 0 40px rgba(56, 189, 248, .7));
+    }
+
+    .fp-arrow.fp-disabled {
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    /* Indicator dots */
+    .fp-dots {
+      position: fixed;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 8999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 90px;
+    }
+
+    .fp-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      padding: 0;
+    }
+
+    .fp-dot.fp-dot-active {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(56, 189, 248, 0.5);
+      transform: scale(1.5);
+    }
+
+    /* Transition effects */
+    @keyframes fp-scan {
+      from {
+        top: -2px;
+      }
+
+      to {
+        top: 102%;
+      }
+    }
+
+    #fp-scanline {
+      position: fixed;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.6) 50%, transparent 100%);
+      z-index: 8001;
+      pointer-events: none;
+      opacity: 0;
+      top: -2px;
+    }
+
+    #fp-scanline.fp-scan-active {
+      opacity: 1;
+      animation: fp-scan 0.85s cubic-bezier(0.77, 0, 0.18, 1) forwards;
+    }
+
+    /* Overlays above everything */
+    nav {
+      z-index: 9500 !important;
+    }
+
+    .doc-page,
+    .lightbox,
+    .fmt-panel {
+      z-index: 10000 !important;
+    }
+
+    /* Compact sections inside slides */
+    .fp-slide .section-label {
+      margin-top: 0.5rem;
+    }
+
+    .fp-slide .bai {
+      margin-top: 1.5rem;
+      padding-top: 0.5rem;
+    }
+
+    .fp-slide .page {
+      padding-top: 0;
+      padding-bottom: 3rem;
+    }
+
+    .fp-slide footer {
+      margin-top: 1.5rem;
+    }
+
+    /* Hero inside slide */
+    .fp-slide .hero-wrapper {
+      min-height: 100vh;
+    }
+
+    .fp-slide .hero-bg {
+      display: none;
+    }
+
+    /* replaced by fp-bg-layer */
+
+    /* Smart image fade */
+    .img-slot img.img-smart-fade {
+      transition: -webkit-mask-image 0.3s, mask-image 0.3s;
+    }
   </style>
 </head>
 
 <body class="mode-edit">
 
+  <!-- Scan line transition -->
+  <div id="fp-scanline"></div>
+
   <nav>
     <a class="nav-logo" href="#">Đỗ Minh Trí</a>
     <ul class="nav-links">
-      <li><a href="#about" class="nav-item">Giới thiệu</a></li>
-      <li><a href="#bai1" class="nav-item">Bài 1</a></li>
-      <li><a href="#bai2" class="nav-item">Bài 2</a></li>
-      <li><a href="#bai3" class="nav-item">Bài 3</a></li>
-      <li><a href="#bai4" class="nav-item">Bài 4</a></li>
-      <li><a href="#bai5" class="nav-item">Bài 5</a></li>
-      <li><a href="#bai6" class="nav-item">Bài 6</a></li>
-      <li><a href="#reflection" class="nav-item">Tổng kết</a></li>
+      <li><a href="#" class="nav-item" data-slide="0">Giới thiệu</a></li>
+      <li><a href="#" class="nav-item" data-slide="1">Bài 1</a></li>
+      <li><a href="#" class="nav-item" data-slide="2">Bài 2</a></li>
+      <li><a href="#" class="nav-item" data-slide="3">Bài 3</a></li>
+      <li><a href="#" class="nav-item" data-slide="4">Bài 4</a></li>
+      <li><a href="#" class="nav-item" data-slide="5">Bài 5</a></li>
+      <li><a href="#" class="nav-item" data-slide="6">Bài 6</a></li>
+      <li><a href="#" class="nav-item" data-slide="7">Tổng kết</a></li>
     </ul>
   </nav>
 
-  <div class="hero-wrapper">
-    <div class="hero-bg"></div>
-    <div class="hero">
-      <div class="hero-label">Portfolio Kỹ Thuật Số · 2025</div>
-      <h1>Nhập môn<br><em>Công nghệ số</em><br>&amp; Ứng dụng AI</h1>
-      <p class="hero-desc">Tập hợp kết quả học tập từ 6 bài tập thành phần — hành trình khám phá công nghệ số, kỹ năng
-        tìm kiếm, viết prompt, làm việc nhóm, sáng tạo nội dung và sử dụng AI có trách nhiệm.</p>
-      <div class="hero-meta">
-        <div class="meta-item"><span class="meta-label">Họ và tên</span><span class="meta-val">Đỗ Minh Trí</span></div>
-        <div class="meta-item"><span class="meta-label">MSSV</span><span class="meta-val">25023059</span></div>
-        <div class="meta-item"><span class="meta-label">Lớp</span><span class="meta-val">K70A-AI2</span></div>
-      </div>
-      <div class="hero-scroll">
-        <div class="scroll-line"></div>Cuộn xuống để xem
-      </div>
-    </div>
+  <!-- Neon nav arrows -->
+  <div class="fp-arrows" id="fp-arrows">
+    <button class="fp-arrow fp-disabled" id="fp-up" title="Slide trước">
+      <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="5,21 15,9 25,21" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round" />
+        <polyline points="5,21 15,9 25,21" stroke="#818cf8" stroke-width="1" stroke-linecap="round"
+          stroke-linejoin="round" opacity="0.5" />
+      </svg>
+    </button>
+    <button class="fp-arrow" id="fp-down" title="Slide tiếp theo">
+      <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="5,9 15,21 25,9" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round" />
+        <polyline points="5,9 15,21 25,9" stroke="#818cf8" stroke-width="1" stroke-linecap="round"
+          stroke-linejoin="round" opacity="0.5" />
+      </svg>
+    </button>
   </div>
 
-  <div class="page">
+  <!-- Slide indicator dots -->
+  <div class="fp-dots" id="fp-dots"></div>
 
-    <div class="section-label" id="about">I. Giới thiệu</div>
-    <h2 class="section-title">Về bản thân</h2>
-    <div class="about-row">
-      <div class="avatar-wrap">
-        <div class="avatar-circle" id="avatarBox">
-          <img src="https://images.unsplash.com/photo-1531297172867-4f50fb5c8743?auto=format&fit=crop&w=300"
-            alt="Avatar">
-          <span class="av-text">Đổi ảnh</span>
-          <input type="file" accept="image/*">
-        </div>
+  <!-- ═══════════════════════════════════════════
+       FULLPAGE CONTAINER
+       ═══════════════════════════════════════════ -->
+  <div id="fp-container">
+
+    <!-- ═══ SLIDE 0: HERO + ABOUT ═══ -->
+    <div class="fp-slide fp-active" id="slide-0" data-slide-index="0">
+      <div class="fp-bg-layer" id="fpbg-0">
+        <img
+          src="https://scontent-hkg1-1.xx.fbcdn.net/v/t39.30808-6/705350613_122174550386825359_7742457518527163366_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_eui2=AeGLRpBeo2JkObQQdS-y9CgeMb9YiOa24eIxv1iI5rbh4r4jVunY8_p7CwA51WL9Cr6nQm_VLf0BdgirCLG2IY-Z&_nc_ohc=XGc8lE9tmoMQ7kNvwG7gX8_&_nc_oc=AdraTMilaQRiKQDOVG4qw8xpJxY7-Vko29QljOKrpet8fwDHjBLpIL9MhuMRFjpbV_A&_nc_zt=23&_nc_ht=scontent-hkg1-1.xx&_nc_gid=90iH4xxNgdHTvX0sSezBIQ&_nc_ss=7b2a8&oh=00_Af9fhSK9gT2ZC6ENN-uZmcvEyUEa3J5TfP-BJlCe6xmflw&oe=6A280230"
+          alt="" id="fpbg-img-0">
       </div>
-      <div class="about-info">
-        <div class="about-grid">
-          <div class="about-block">
-            <h3>Ngành học</h3>
-            <p>Trí tuệ Nhân tạo<br>Đại học Công nghệ – ĐHQGHN</p>
+      <label class="fp-bg-input">🖼 Nền <input type="file" accept="image/*" data-slide-bg="0"></label>
+      <div class="fp-inner">
+        <div class="page" style="padding-top:0;padding-bottom:3rem">
+          <div class="hero-wrapper">
+            <div class="hero-bg"></div>
+            <div class="hero">
+              <div class="hero-label">Portfolio Kỹ Thuật Số · 2026</div>
+              <h1>Nhập môn<br><em>Công nghệ số</em><br>&amp; Ứng dụng AI</h1>
+              <p class="hero-desc">Tập hợp kết quả học tập từ 6 bài tập thành phần — hành trình khám phá công nghệ số,
+                kỹ năng
+                tìm kiếm, viết prompt, làm việc nhóm, sáng tạo nội dung và sử dụng AI có trách nhiệm.</p>
+              <div class="hero-meta">
+                <div class="meta-item"><span class="meta-label">Họ và tên</span><span class="meta-val">Đỗ Minh
+                    Trí</span></div>
+                <div class="meta-item"><span class="meta-label">MSSV</span><span class="meta-val">25023059</span></div>
+                <div class="meta-item"><span class="meta-label">Lớp</span><span class="meta-val">K70A-AI2</span></div>
+              </div>
+              <div class="hero-scroll">
+                <div class="scroll-line"></div>Cuộn xuống để xem
+              </div>
+            </div>
           </div>
-          <div class="about-block">
-            <h3>Sở thích</h3>
-            <p>Nghiên cứu khoa học tự nhiên và theo đuổi các xu hướng công nghệ mới</p>
+          <div class="section-label" id="about" style="margin-top:1.5rem">I. Giới thiệu</div>
+          <h2 class="section-title">Về bản thân</h2>
+          <div class="section-label" id="about">I. Giới thiệu</div>
+          <h2 class="section-title">Về bản thân</h2>
+          <div class="about-row">
+            <div class="avatar-wrap">
+              <div class="avatar-circle" id="avatarBox">
+                <img src="https://images.unsplash.com/photo-1531297172867-4f50fb5c8743?auto=format&fit=crop&w=300"
+                  alt="Avatar">
+                <span class="av-text">Đổi ảnh</span>
+                <input type="file" accept="image/*">
+              </div>
+            </div>
+            <div class="about-info">
+              <div class="about-grid">
+                <div class="about-block">
+                  <h3>Ngành học</h3>
+                  <p>Trí tuệ Nhân tạo<br>Đại học Công nghệ – ĐHQGHN</p>
+                </div>
+                <div class="about-block">
+                  <h3>Sở thích</h3>
+                  <p>Nghiên cứu khoa học tự nhiên và theo đuổi các xu hướng công nghệ mới</p>
+                </div>
+                <div class="about-block">
+                  <h3>Hoạt động</h3>
+                  <p>Thành viên Ban chuyên môn CLB Cờ vua Đại học Quốc gia Hà Nội</p>
+                </div>
+                <div class="about-block">
+                  <h3>Định hướng</h3>
+                  <p>AI Vtuber số một Việt Nam</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="about-block">
-            <h3>Hoạt động</h3>
-            <p>Thành viên Ban chuyên môn CLB Cờ vua Đại học Quốc gia Hà Nội</p>
-          </div>
-          <div class="about-block">
-            <h3>Định hướng</h3>
-            <p>AI Vtuber số một Việt Nam</p>
+          <div class="goal-box">
+            <p>"Portfolio này không chỉ là một bài tập, mà là hành trình học tập thực sự được ghi lại và phản ánh một
+              cách
+              trung thực."</p>
           </div>
         </div>
       </div>
     </div>
-    <div class="goal-box">
-      <p>"Portfolio này không chỉ là một bài tập, mà là hành trình học tập thực sự được ghi lại và phản ánh một cách
-        trung thực."</p>
-    </div>
 
-    <!-- ════ BÀI 1 ════ -->
-    <div class="bai" id="bai1">
-      <div class="bai-header">
-        <div class="bai-num">Bài 01 · Mục 1.4</div>
-        <div class="bai-title">Thao tác cơ bản với tệp tin và thư mục</div>
-        <div class="bai-module">Máy tính và các thiết bị ngoại vi</div>
+    <!-- ═══ SLIDE 1 ═══ -->
+    <div class="fp-slide" id="slide-1" data-slide-index="1">
+      <div class="fp-bg-layer" id="fpbg-1">
+        <img src="" alt="" id="fpbg-img-1" style="display:none">
       </div>
-      <p class="bai-desc">Xây dựng và triển khai quy trình quản lý tệp tin chuyên nghiệp trên Windows — từ tạo cấu trúc
-        thư mục tối ưu đến thành thạo Copy, Cut, Paste, Rename, Delete và khôi phục từ Recycle Bin.</p>
-      <div class="img-block">
-        <div class="img-block-label">Cấu trúc thư mục đã tạo</div>
-        <div class="img-full">
-          <div class="img-slot" id="b1a">
-            <div class="si">🗂️</div>
-            <div class="st">Ảnh chụp màn hình File Explorer</div>
-            <div class="sh">Kéo thả ảnh hoặc click để chọn file</div>
-            <div class="cap">Cấu trúc thư mục</div><input type="file" accept="image/*">
-          </div>
-        </div>
-      </div>
-      <div class="img-block">
-        <div class="img-block-label">Thao tác Copy &amp; Move (Cut)</div>
-        <div class="img-2col">
-          <div class="img-slot" id="b1b">
-            <div class="si">📋</div>
-            <div class="st">Copy &amp; Paste</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Copy &amp; Paste</div><input type="file" accept="image/*">
-          </div>
-          <div class="img-slot" id="b1c">
-            <div class="si">✂️</div>
-            <div class="st">Cut &amp; Paste (Di chuyển)</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Cut &amp; Paste</div><input type="file" accept="image/*">
-          </div>
-        </div>
-      </div>
-      <div class="img-block">
-        <div class="img-block-label">Đổi tên &amp; Xóa / Khôi phục</div>
-        <div class="img-2col">
-          <div class="img-slot" id="b1d">
-            <div class="si">✏️</div>
-            <div class="st">Đổi tên file (Rename)</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Rename</div><input type="file" accept="image/*">
-          </div>
-          <div class="img-slot" id="b1e">
-            <div class="si">🗑️</div>
-            <div class="st">Recycle Bin &amp; Restore</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Recycle Bin</div><input type="file" accept="image/*">
-          </div>
-        </div>
-      </div>
-      <div class="bai-highlights">
-        <h4>Kết quả nổi bật</h4>
-        <ul class="hl-list">
-          <li>Tạo cấu trúc thư mục phân cấp: ThucHanh_DoMinhTri / TaiLieu</li>
-          <li>Thành thạo 12 bước thao tác tệp tin với File Explorer</li>
-          <li>Áp dụng quy tắc đặt tên chuẩn, không dấu, mô tả rõ nội dung</li>
-          <li>Hiểu sự khác biệt giữa xóa thường và xóa vĩnh viễn (Shift+Delete)</li>
-        </ul>
-      </div>
-      <div class="tags"><span class="tag">Windows Explorer</span><span class="tag">Quản lý tệp tin</span><span
-          class="tag">Tổ chức dữ liệu</span></div>
-      <div class="word-section">
-        <div class="word-drop" id="wd-bai1" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
-          ondrop="wdDrop(event,'bai1')">
-          <div class="wd-icon">📄</div>
-          <div class="wd-info">
-            <div class="wd-title" id="wn-bai1">Chèn file Word bài làm</div>
-            <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
-          </div>
-          <button class="wd-del" onclick="wdRemove('bai1',event)">✕ Xóa</button>
-          <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai1')">
-        </div>
-        <button class="bai-view-btn" id="vb-bai1"
-          onclick="openDoc('bai1','Bài 01 · Mục 1.4','Thao tác cơ bản với tệp tin và thư mục')" disabled>
-          Xem toàn bộ bài làm <span class="btn-arrow">→</span>
-        </button>
-      </div>
-    </div>
+      <label class="fp-bg-input">🖼 Nền <input type="file" accept="image/*" data-slide-bg="1"></label>
+      <div class="fp-inner">
+        <div class="page" style="padding-top:5rem;">
+          <div class="section-label" style="margin-top:0">II. Bài tập thành phần</div>
 
-    <!-- ════ BÀI 2 ════ -->
-    <div class="bai" id="bai2">
-      <div class="bai-header">
-        <div class="bai-num">Bài 02 · Mục 2.4</div>
-        <div class="bai-title">Tìm kiếm và đánh giá thông tin học thuật</div>
-        <div class="bai-module">Khai thác dữ liệu và thông tin</div>
-      </div>
-      <p class="bai-desc">Thực hiện tìm kiếm chuyên sâu về AI, tổng hợp và đánh giá 10 nguồn học thuật hàng đầu từ
-        NeurIPS, arXiv. Xây dựng bảng đánh giá độ tin cậy kèm nhận xét phân tích cá nhân cho từng tài liệu.</p>
-      <div class="bai-highlights">
-        <h4>Kết quả nổi bật</h4>
-        <ul class="hl-list">
-          <li>Đánh giá 10 tài liệu từ "Attention Is All You Need" đến LLaMA với thang 5 sao</li>
-          <li>Phân tích phê bình: nhận ra GPT-4 Technical Report thiếu minh bạch về tham số</li>
-          <li>Tích hợp tài liệu địa phương về NLP tiếng Việt (VNU-LIC)</li>
-        </ul>
-      </div>
-      <div class="tags"><span class="tag">Google Scholar</span><span class="tag">arXiv</span><span class="tag">Đánh giá
-          học thuật</span></div>
-      <div class="word-section">
-        <div class="word-drop" id="wd-bai2" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
-          ondrop="wdDrop(event,'bai2')">
-          <div class="wd-icon">📄</div>
-          <div class="wd-info">
-            <div class="wd-title" id="wn-bai2">Chèn file Word bài làm</div>
-            <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
+          <div class="bai" id="bai1">
+            <div class="bai-header">
+              <div class="bai-num">Bài 01 · Mục 1.4</div>
+              <div class="bai-title">Thao tác cơ bản với tệp tin và thư mục</div>
+              <div class="bai-module">Máy tính và các thiết bị ngoại vi</div>
+            </div>
+            <p class="bai-desc">Xây dựng và triển khai quy trình quản lý tệp tin chuyên nghiệp trên Windows — từ tạo cấu
+              trúc
+              thư mục tối ưu đến thành thạo Copy, Cut, Paste, Rename, Delete và khôi phục từ Recycle Bin.</p>
+            <div class="img-block">
+              <div class="img-block-label">Cấu trúc thư mục đã tạo</div>
+              <div class="img-full">
+                <div class="img-slot" id="b1a">
+                  <div class="si">🗂️</div>
+                  <div class="st">Ảnh chụp màn hình File Explorer</div>
+                  <div class="sh">Kéo thả ảnh hoặc click để chọn file</div>
+                  <div class="cap">Cấu trúc thư mục</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="img-block">
+              <div class="img-block-label">Thao tác Copy &amp; Move (Cut)</div>
+              <div class="img-2col">
+                <div class="img-slot" id="b1b">
+                  <div class="si">📋</div>
+                  <div class="st">Copy &amp; Paste</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Copy &amp; Paste</div><input type="file" accept="image/*">
+                </div>
+                <div class="img-slot" id="b1c">
+                  <div class="si">✂️</div>
+                  <div class="st">Cut &amp; Paste (Di chuyển)</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Cut &amp; Paste</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="img-block">
+              <div class="img-block-label">Đổi tên &amp; Xóa / Khôi phục</div>
+              <div class="img-2col">
+                <div class="img-slot" id="b1d">
+                  <div class="si">✏️</div>
+                  <div class="st">Đổi tên file (Rename)</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Rename</div><input type="file" accept="image/*">
+                </div>
+                <div class="img-slot" id="b1e">
+                  <div class="si">🗑️</div>
+                  <div class="st">Recycle Bin &amp; Restore</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Recycle Bin</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="bai-highlights">
+              <h4>Kết quả nổi bật</h4>
+              <ul class="hl-list">
+                <li>Tạo cấu trúc thư mục phân cấp: ThucHanh_DoMinhTri / TaiLieu</li>
+                <li>Thành thạo 12 bước thao tác tệp tin với File Explorer</li>
+                <li>Áp dụng quy tắc đặt tên chuẩn, không dấu, mô tả rõ nội dung</li>
+                <li>Hiểu sự khác biệt giữa xóa thường và xóa vĩnh viễn (Shift+Delete)</li>
+              </ul>
+            </div>
+            <div class="tags"><span class="tag">Windows Explorer</span><span class="tag">Quản lý tệp tin</span><span
+                class="tag">Tổ chức dữ liệu</span></div>
+            <div class="word-section">
+              <div class="word-drop" id="wd-bai1" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
+                ondrop="wdDrop(event,'bai1')">
+                <div class="wd-icon">📄</div>
+                <div class="wd-info">
+                  <div class="wd-title" id="wn-bai1">Chèn file Word bài làm</div>
+                  <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
+                </div>
+                <button class="wd-del" onclick="wdRemove('bai1',event)">✕ Xóa</button>
+                <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai1')">
+              </div>
+              <button class="bai-view-btn" id="vb-bai1"
+                onclick="openDoc('bai1','Bài 01 · Mục 1.4','Thao tác cơ bản với tệp tin và thư mục')" disabled>
+                Xem toàn bộ bài làm <span class="btn-arrow">→</span>
+              </button>
+            </div>
           </div>
-          <button class="wd-del" onclick="wdRemove('bai2',event)">✕ Xóa</button>
-          <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai2')">
         </div>
-        <button class="bai-view-btn" id="vb-bai2"
-          onclick="openDoc('bai2','Bài 02 · Mục 2.4','Tìm kiếm và đánh giá thông tin học thuật')" disabled>
-          Xem toàn bộ bài làm <span class="btn-arrow">→</span>
-        </button>
       </div>
     </div>
+    <!-- ═══ SLIDE 2 ═══ -->
+    <div class="fp-slide" id="slide-2" data-slide-index="2">
+      <div class="fp-bg-layer" id="fpbg-2">
+        <img src="" alt="" id="fpbg-img-2" style="display:none">
+      </div>
+      <label class="fp-bg-input">🖼 Nền <input type="file" accept="image/*" data-slide-bg="2"></label>
+      <div class="fp-inner">
+        <div class="page" style="padding-top:5rem;">
 
-    <!-- ════ BÀI 3 ════ -->
-    <div class="bai" id="bai3">
-      <div class="bai-header">
-        <div class="bai-num">Bài 03 · Mục 3.4</div>
-        <div class="bai-title">Viết Prompt hiệu quả cho tác vụ học tập</div>
-        <div class="bai-module">Tổng quan về Trí tuệ Nhân tạo</div>
-      </div>
-      <p class="bai-desc">Thử nghiệm hệ thống prompt engineering qua 3 tác vụ: tóm tắt bài báo, giải thích CNN, tạo câu
-        hỏi ôn tập. So sánh 3 cấp độ prompt (Cơ bản → Cải tiến → Nâng cao) và đúc kết nguyên tắc CREATE.</p>
-      <div class="img-block">
-        <div class="img-block-label">So sánh 3 cấp độ Prompt</div>
-        <div class="img-3col">
-          <div class="img-slot" id="b3a">
-            <div class="si">💬</div>
-            <div class="st">Prompt Cơ bản</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Kết quả Cơ bản</div><input type="file" accept="image/*">
-          </div>
-          <div class="img-slot" id="b3b">
-            <div class="si">🔧</div>
-            <div class="st">Prompt Cải tiến</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Kết quả Cải tiến</div><input type="file" accept="image/*">
-          </div>
-          <div class="img-slot" id="b3c">
-            <div class="si">⭐</div>
-            <div class="st">Prompt Nâng cao</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Kết quả Nâng cao</div><input type="file" accept="image/*">
-          </div>
-        </div>
-      </div>
-      <div class="img-block">
-        <div class="img-block-label">Bảng tổng hợp đánh giá 9 Prompt</div>
-        <div class="img-full">
-          <div class="img-slot" id="b3d">
-            <div class="si">📋</div>
-            <div class="st">Bảng so sánh đầy đủ</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div>
-            <div class="cap">Bảng tổng hợp so sánh prompt</div><input type="file" accept="image/*">
+          <div class="bai" id="bai2">
+            <div class="bai-header">
+              <div class="bai-num">Bài 02 · Mục 2.4</div>
+              <div class="bai-title">Tìm kiếm và đánh giá thông tin học thuật</div>
+              <div class="bai-module">Khai thác dữ liệu và thông tin</div>
+            </div>
+            <p class="bai-desc">Thực hiện tìm kiếm chuyên sâu về AI, tổng hợp và đánh giá 10 nguồn học thuật hàng đầu từ
+              NeurIPS, arXiv. Xây dựng bảng đánh giá độ tin cậy kèm nhận xét phân tích cá nhân cho từng tài liệu.</p>
+            <div class="bai-highlights">
+              <h4>Kết quả nổi bật</h4>
+              <ul class="hl-list">
+                <li>Đánh giá 10 tài liệu từ "Attention Is All You Need" đến LLaMA với thang 5 sao</li>
+                <li>Phân tích phê bình: nhận ra GPT-4 Technical Report thiếu minh bạch về tham số</li>
+                <li>Tích hợp tài liệu địa phương về NLP tiếng Việt (VNU-LIC)</li>
+              </ul>
+            </div>
+            <div class="tags"><span class="tag">Google Scholar</span><span class="tag">arXiv</span><span
+                class="tag">Đánh giá
+                học thuật</span></div>
+            <div class="word-section">
+              <div class="word-drop" id="wd-bai2" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
+                ondrop="wdDrop(event,'bai2')">
+                <div class="wd-icon">📄</div>
+                <div class="wd-info">
+                  <div class="wd-title" id="wn-bai2">Chèn file Word bài làm</div>
+                  <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
+                </div>
+                <button class="wd-del" onclick="wdRemove('bai2',event)">✕ Xóa</button>
+                <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai2')">
+              </div>
+              <button class="bai-view-btn" id="vb-bai2"
+                onclick="openDoc('bai2','Bài 02 · Mục 2.4','Tìm kiếm và đánh giá thông tin học thuật')" disabled>
+                Xem toàn bộ bài làm <span class="btn-arrow">→</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="bai-highlights">
-        <h4>Kết quả nổi bật</h4>
-        <ul class="hl-list">
-          <li>Phân tích 9 prompt đầu ra, đánh giá từ "Kém" đến "Xuất sắc"</li>
-          <li>Đúc kết nguyên tắc CREATE: Context, Role, Explicit, Appearance, Tone, Examples</li>
-          <li>Chứng minh Chain-of-Thought giảm thiểu hallucination</li>
-        </ul>
-      </div>
-      <div class="tags"><span class="tag">Prompt Engineering</span><span class="tag">Role Prompting</span><span
-          class="tag">Chain-of-Thought</span></div>
-      <div class="word-section">
-        <div class="word-drop" id="wd-bai3" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
-          ondrop="wdDrop(event,'bai3')">
-          <div class="wd-icon">📄</div>
-          <div class="wd-info">
-            <div class="wd-title" id="wn-bai3">Chèn file Word bài làm</div>
-            <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
-          </div>
-          <button class="wd-del" onclick="wdRemove('bai3',event)">✕ Xóa</button>
-          <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai3')">
-        </div>
-        <button class="bai-view-btn" id="vb-bai3"
-          onclick="openDoc('bai3','Bài 03 · Mục 3.4','Viết Prompt hiệu quả cho tác vụ học tập')" disabled>
-          Xem toàn bộ bài làm <span class="btn-arrow">→</span>
-        </button>
       </div>
     </div>
+    <!-- ═══ SLIDE 3 ═══ -->
+    <div class="fp-slide" id="slide-3" data-slide-index="3">
+      <div class="fp-bg-layer" id="fpbg-3">
+        <img src="" alt="" id="fpbg-img-3" style="display:none">
+      </div>
+      <label class="fp-bg-input">🖼 Nền <input type="file" accept="image/*" data-slide-bg="3"></label>
+      <div class="fp-inner">
+        <div class="page" style="padding-top:5rem;">
 
-    <!-- ════ BÀI 4 ════ -->
-    <div class="bai" id="bai4">
-      <div class="bai-header">
-        <div class="bai-num">Bài 04 · Mục 4.4</div>
-        <div class="bai-title">Hợp tác trực tuyến dự án nhóm</div>
-        <div class="bai-module">Giao tiếp trong môi trường số</div>
-      </div>
-      <div class="img-block">
-        <div class="img-block-label">Trello — Quản lý tiến độ</div>
-        <div class="img-full">
-          <div class="img-slot" id="b4a" style="aspect-ratio:16/8">
-            <div class="si">📌</div>
-            <div class="st">Màn hình Board Trello</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
+          <div class="bai" id="bai3">
+            <div class="bai-header">
+              <div class="bai-num">Bài 03 · Mục 3.4</div>
+              <div class="bai-title">Viết Prompt hiệu quả cho tác vụ học tập</div>
+              <div class="bai-module">Tổng quan về Trí tuệ Nhân tạo</div>
+            </div>
+            <p class="bai-desc">Thử nghiệm hệ thống prompt engineering qua 3 tác vụ: tóm tắt bài báo, giải thích CNN,
+              tạo câu
+              hỏi ôn tập. So sánh 3 cấp độ prompt (Cơ bản → Cải tiến → Nâng cao) và đúc kết nguyên tắc CREATE.</p>
+            <div class="img-block">
+              <div class="img-block-label">So sánh 3 cấp độ Prompt</div>
+              <div class="img-3col">
+                <div class="img-slot" id="b3a">
+                  <div class="si">💬</div>
+                  <div class="st">Prompt Cơ bản</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Kết quả Cơ bản</div><input type="file" accept="image/*">
+                </div>
+                <div class="img-slot" id="b3b">
+                  <div class="si">🔧</div>
+                  <div class="st">Prompt Cải tiến</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Kết quả Cải tiến</div><input type="file" accept="image/*">
+                </div>
+                <div class="img-slot" id="b3c">
+                  <div class="si">⭐</div>
+                  <div class="st">Prompt Nâng cao</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Kết quả Nâng cao</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="img-block">
+              <div class="img-block-label">Bảng tổng hợp đánh giá 9 Prompt</div>
+              <div class="img-full">
+                <div class="img-slot" id="b3d">
+                  <div class="si">📋</div>
+                  <div class="st">Bảng so sánh đầy đủ</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Bảng tổng hợp so sánh prompt</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="bai-highlights">
+              <h4>Kết quả nổi bật</h4>
+              <ul class="hl-list">
+                <li>Phân tích 9 prompt đầu ra, đánh giá từ "Kém" đến "Xuất sắc"</li>
+                <li>Đúc kết nguyên tắc CREATE: Context, Role, Explicit, Appearance, Tone, Examples</li>
+                <li>Chứng minh Chain-of-Thought giảm thiểu hallucination</li>
+              </ul>
+            </div>
+            <div class="tags"><span class="tag">Prompt Engineering</span><span class="tag">Role Prompting</span><span
+                class="tag">Chain-of-Thought</span></div>
+            <div class="word-section">
+              <div class="word-drop" id="wd-bai3" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
+                ondrop="wdDrop(event,'bai3')">
+                <div class="wd-icon">📄</div>
+                <div class="wd-info">
+                  <div class="wd-title" id="wn-bai3">Chèn file Word bài làm</div>
+                  <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
+                </div>
+                <button class="wd-del" onclick="wdRemove('bai3',event)">✕ Xóa</button>
+                <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai3')">
+              </div>
+              <button class="bai-view-btn" id="vb-bai3"
+                onclick="openDoc('bai3','Bài 03 · Mục 3.4','Viết Prompt hiệu quả cho tác vụ học tập')" disabled>
+                Xem toàn bộ bài làm <span class="btn-arrow">→</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="img-block">
-        <div class="img-block-label">Google Docs &amp; Drive</div>
-        <div class="img-2col">
-          <div class="img-slot" id="b4b">
-            <div class="si">📝</div>
-            <div class="st">Google Docs</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
-          </div>
-          <div class="img-slot" id="b4c">
-            <div class="si">📁</div>
-            <div class="st">Google Drive</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
-          </div>
-        </div>
-      </div>
-      <div class="tags"><span class="tag">Trello</span><span class="tag">Google Workspace</span><span class="tag">Quản
-          lý dự án</span></div>
-      <div class="word-section">
-        <div class="word-drop" id="wd-bai4" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
-          ondrop="wdDrop(event,'bai4')">
-          <div class="wd-icon">📄</div>
-          <div class="wd-info">
-            <div class="wd-title" id="wn-bai4">Chèn file Word bài làm</div>
-            <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
-          </div>
-          <button class="wd-del" onclick="wdRemove('bai4',event)">✕ Xóa</button>
-          <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai4')">
-        </div>
-        <button class="bai-view-btn" id="vb-bai4"
-          onclick="openDoc('bai4','Bài 04 · Mục 4.4','Hợp tác trực tuyến dự án nhóm')" disabled>
-          Xem toàn bộ bài làm <span class="btn-arrow">→</span>
-        </button>
       </div>
     </div>
+    <!-- ═══ SLIDE 4 ═══ -->
+    <div class="fp-slide" id="slide-4" data-slide-index="4">
+      <div class="fp-bg-layer" id="fpbg-4">
+        <img src="" alt="" id="fpbg-img-4" style="display:none">
+      </div>
+      <label class="fp-bg-input">🖼 Nền <input type="file" accept="image/*" data-slide-bg="4"></label>
+      <div class="fp-inner">
+        <div class="page" style="padding-top:5rem;">
 
-    <!-- ════ BÀI 5 ════ -->
-    <div class="bai" id="bai5">
-      <div class="bai-header">
-        <div class="bai-num">Bài 05 · Mục 5.4</div>
-        <div class="bai-title">AI hỗ trợ sáng tạo nội dung</div>
-        <div class="bai-module">Sáng tạo nội dung số</div>
-      </div>
-      <div class="img-block">
-        <div class="img-block-label">Sản phẩm video hoàn thiện</div>
-        <div class="img-full">
-          <div class="img-slot" id="b5a">
-            <div class="si">🎬</div>
-            <div class="st">Thumbnail video Minimax</div>
-            <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
+          <div class="bai" id="bai4">
+            <div class="bai-header">
+              <div class="bai-num">Bài 04 · Mục 4.4</div>
+              <div class="bai-title">Hợp tác trực tuyến dự án nhóm</div>
+              <div class="bai-module">Giao tiếp trong môi trường số</div>
+            </div>
+            <div class="img-block">
+              <div class="img-block-label">Trello — Quản lý tiến độ</div>
+              <div class="img-full">
+                <div class="img-slot" id="b4a" style="aspect-ratio:16/8">
+                  <div class="si">📌</div>
+                  <div class="st">Màn hình Board Trello</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="img-block">
+              <div class="img-block-label">Google Docs &amp; Drive</div>
+              <div class="img-2col">
+                <div class="img-slot" id="b4b">
+                  <div class="si">📝</div>
+                  <div class="st">Google Docs</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
+                </div>
+                <div class="img-slot" id="b4c">
+                  <div class="si">📁</div>
+                  <div class="st">Google Drive</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="tags"><span class="tag">Trello</span><span class="tag">Google Workspace</span><span
+                class="tag">Quản
+                lý dự án</span></div>
+            <div class="word-section">
+              <div class="word-drop" id="wd-bai4" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
+                ondrop="wdDrop(event,'bai4')">
+                <div class="wd-icon">📄</div>
+                <div class="wd-info">
+                  <div class="wd-title" id="wn-bai4">Chèn file Word bài làm</div>
+                  <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
+                </div>
+                <button class="wd-del" onclick="wdRemove('bai4',event)">✕ Xóa</button>
+                <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai4')">
+              </div>
+              <button class="bai-view-btn" id="vb-bai4"
+                onclick="openDoc('bai4','Bài 04 · Mục 4.4','Hợp tác trực tuyến dự án nhóm')" disabled>
+                Xem toàn bộ bài làm <span class="btn-arrow">→</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="img-block">
-        <div class="img-block-label">Quy trình sử dụng 3 công cụ AI</div>
-        <div class="img-3col">
-          <div class="img-slot" id="b5b">
-            <div class="si">🤖</div>
-            <div class="st">Midjourney</div><input type="file" accept="image/*">
-          </div>
-          <div class="img-slot" id="b5c">
-            <div class="si">✨</div>
-            <div class="st">Canva AI / Firefly</div><input type="file" accept="image/*">
-          </div>
-          <div class="img-slot" id="b5d">
-            <div class="si">💻</div>
-            <div class="st">Demo C++</div><input type="file" accept="image/*">
-          </div>
-        </div>
-      </div>
-      <div class="tags"><span class="tag">Generative AI</span><span class="tag">Midjourney</span><span
-          class="tag">C++</span></div>
-      <div class="word-section">
-        <div class="word-drop" id="wd-bai5" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
-          ondrop="wdDrop(event,'bai5')">
-          <div class="wd-icon">📄</div>
-          <div class="wd-info">
-            <div class="wd-title" id="wn-bai5">Chèn file Word bài làm</div>
-            <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
-          </div>
-          <button class="wd-del" onclick="wdRemove('bai5',event)">✕ Xóa</button>
-          <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai5')">
-        </div>
-        <button class="bai-view-btn" id="vb-bai5"
-          onclick="openDoc('bai5','Bài 05 · Mục 5.4','AI hỗ trợ sáng tạo nội dung')" disabled>
-          Xem toàn bộ bài làm <span class="btn-arrow">→</span>
-        </button>
       </div>
     </div>
-
-    <!-- ════ BÀI 6 ════ -->
-    <div class="bai" id="bai6">
-      <div class="bai-header">
-        <div class="bai-num">Bài 06 · Mục 6.4</div>
-        <div class="bai-title">AI có trách nhiệm trong học tập</div>
-        <div class="bai-module">An toàn &amp; Liêm chính học thuật</div>
+    <!-- ═══ SLIDE 5 ═══ -->
+    <div class="fp-slide" id="slide-5" data-slide-index="5">
+      <div class="fp-bg-layer" id="fpbg-5">
+        <img src="" alt="" id="fpbg-img-5" style="display:none">
       </div>
-      <div class="img-block">
-        <div class="img-block-label">Sản phẩm học tập</div>
-        <div class="img-featured">
-          <div class="img-slot" id="b6a" style="aspect-ratio:4/3">
-            <div class="si">📜</div>
-            <div class="st">Slide có ghi chú AI</div><input type="file" accept="image/*">
-          </div>
-          <div class="img-slot" id="b6b" style="aspect-ratio:4/3">
-            <div class="si">🧭</div>
-            <div class="st">Infographic 7 nguyên tắc</div><input type="file" accept="image/*">
+      <label class="fp-bg-input">🖼 Nền <input type="file" accept="image/*" data-slide-bg="5"></label>
+      <div class="fp-inner">
+        <div class="page" style="padding-top:5rem;">
+
+          <div class="bai" id="bai5">
+            <div class="bai-header">
+              <div class="bai-num">Bài 05 · Mục 5.4</div>
+              <div class="bai-title">AI hỗ trợ sáng tạo nội dung</div>
+              <div class="bai-module">Sáng tạo nội dung số</div>
+            </div>
+            <div class="img-block">
+              <div class="img-block-label">Sản phẩm video hoàn thiện</div>
+              <div class="img-full">
+                <div class="img-slot" id="b5a">
+                  <div class="si">🎬</div>
+                  <div class="st">Thumbnail video Minimax</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="img-block">
+              <div class="img-block-label">Quy trình sử dụng 3 công cụ AI</div>
+              <div class="img-3col">
+                <div class="img-slot" id="b5b">
+                  <div class="si">🤖</div>
+                  <div class="st">Midjourney</div><input type="file" accept="image/*">
+                </div>
+                <div class="img-slot" id="b5c">
+                  <div class="si">✨</div>
+                  <div class="st">Canva AI / Firefly</div><input type="file" accept="image/*">
+                </div>
+                <div class="img-slot" id="b5d">
+                  <div class="si">💻</div>
+                  <div class="st">Demo C++</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="tags"><span class="tag">Generative AI</span><span class="tag">Midjourney</span><span
+                class="tag">C++</span></div>
+            <div class="word-section">
+              <div class="word-drop" id="wd-bai5" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
+                ondrop="wdDrop(event,'bai5')">
+                <div class="wd-icon">📄</div>
+                <div class="wd-info">
+                  <div class="wd-title" id="wn-bai5">Chèn file Word bài làm</div>
+                  <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
+                </div>
+                <button class="wd-del" onclick="wdRemove('bai5',event)">✕ Xóa</button>
+                <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai5')">
+              </div>
+              <button class="bai-view-btn" id="vb-bai5"
+                onclick="openDoc('bai5','Bài 05 · Mục 5.4','AI hỗ trợ sáng tạo nội dung')" disabled>
+                Xem toàn bộ bài làm <span class="btn-arrow">→</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      <div class="tags"><span class="tag">AI Ethics</span><span class="tag">Liêm chính học thuật</span></div>
-      <div class="word-section">
-        <div class="word-drop" id="wd-bai6" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
-          ondrop="wdDrop(event,'bai6')">
-          <div class="wd-icon">📄</div>
-          <div class="wd-info">
-            <div class="wd-title" id="wn-bai6">Chèn file Word bài làm</div>
-            <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
+    </div>
+    <!-- ═══ SLIDE 6 ═══ -->
+    <div class="fp-slide" id="slide-6" data-slide-index="6">
+      <div class="fp-bg-layer" id="fpbg-6">
+        <img src="" alt="" id="fpbg-img-6" style="display:none">
+      </div>
+      <label class="fp-bg-input">🖼 Nền <input type="file" accept="image/*" data-slide-bg="6"></label>
+      <div class="fp-inner">
+        <div class="page" style="padding-top:5rem;">
+
+          <div class="bai" id="bai6">
+            <div class="bai-header">
+              <div class="bai-num">Bài 06 · Mục 6.4</div>
+              <div class="bai-title">AI có trách nhiệm trong học tập</div>
+              <div class="bai-module">An toàn &amp; Liêm chính học thuật</div>
+            </div>
+            <div class="img-block">
+              <div class="img-block-label">Sản phẩm học tập</div>
+              <div class="img-featured">
+                <div class="img-slot" id="b6a" style="aspect-ratio:4/3">
+                  <div class="si">📜</div>
+                  <div class="st">Slide có ghi chú AI</div><input type="file" accept="image/*">
+                </div>
+                <div class="img-slot" id="b6b" style="aspect-ratio:4/3">
+                  <div class="si">🧭</div>
+                  <div class="st">Infographic 7 nguyên tắc</div><input type="file" accept="image/*">
+                </div>
+              </div>
+            </div>
+            <div class="tags"><span class="tag">AI Ethics</span><span class="tag">Liêm chính học thuật</span></div>
+            <div class="word-section">
+              <div class="word-drop" id="wd-bai6" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
+                ondrop="wdDrop(event,'bai6')">
+                <div class="wd-icon">📄</div>
+                <div class="wd-info">
+                  <div class="wd-title" id="wn-bai6">Chèn file Word bài làm</div>
+                  <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
+                </div>
+                <button class="wd-del" onclick="wdRemove('bai6',event)">✕ Xóa</button>
+                <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai6')">
+              </div>
+              <button class="bai-view-btn" id="vb-bai6"
+                onclick="openDoc('bai6','Bài 06 · Mục 6.4','AI có trách nhiệm trong học tập')" disabled>
+                Xem toàn bộ bài làm <span class="btn-arrow">→</span>
+              </button>
+            </div>
           </div>
-          <button class="wd-del" onclick="wdRemove('bai6',event)">✕ Xóa</button>
-          <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai6')">
         </div>
-        <button class="bai-view-btn" id="vb-bai6"
-          onclick="openDoc('bai6','Bài 06 · Mục 6.4','AI có trách nhiệm trong học tập')" disabled>
-          Xem toàn bộ bài làm <span class="btn-arrow">→</span>
-        </button>
       </div>
     </div>
+    <!-- ═══ SLIDE 7 ═══ -->
+    <div class="fp-slide" id="slide-7" data-slide-index="7">
+      <div class="fp-bg-layer" id="fpbg-7">
+        <img src="" alt="" id="fpbg-img-7" style="display:none">
+      </div>
+      <label class="fp-bg-input">🖼 Nền <input type="file" accept="image/*" data-slide-bg="7"></label>
+      <div class="fp-inner">
+        <div class="page" style="padding-top:5rem;">
 
-    <div class="section-label" id="reflection" style="margin-top:5rem">III. Tổng kết</div>
-    <h2 class="section-title">Trải nghiệm &amp; Bài học</h2>
-    <div class="reflection-grid">
-      <div class="ref-card">
-        <h3>Kỹ năng chính đạt được</h3>
-        <p>Từ quản lý tệp tin cơ bản đến prompt engineering nâng cao, từ đánh giá nguồn học thuật đến phân tích đạo đức
-          AI — một vòng tròn kỹ năng số hoàn chỉnh.</p>
-      </div>
-      <div class="ref-card">
-        <h3>Thách thức thú vị nhất</h3>
-        <p>Bài 3 — Prompt Engineering: cách "nói chuyện" với AI quan trọng không kém năng lực của AI. Một prompt tốt tạo
-          ra kết quả "Xuất sắc" từ cùng một model.</p>
-      </div>
-      <div class="ref-card">
-        <h3>Điều tâm đắc nhất</h3>
-        <p>Bài 6 thay đổi cách nhìn về AI: không phải công cụ thần kỳ hay mối đe dọa, mà là "người thực tập đắc lực" cần
-          giám sát và hướng dẫn của con người.</p>
-      </div>
-      <div class="ref-card">
-        <h3>Định hướng tiếp theo</h3>
-        <p>Ứng dụng nguyên tắc CREATE và 7 nguyên tắc AI có trách nhiệm vào các đồ án chuyên ngành. Tiếp tục xây dựng
-          portfolio như một sản phẩm sống.</p>
+          <div class="section-label" id="reflection" style="margin-top:0">III. Tổng kết</div>
+          <h2 class="section-title">Trải nghiệm &amp; Bài học</h2>
+          <div class="section-label" id="reflection" style="margin-top:5rem">III. Tổng kết</div>
+          <h2 class="section-title">Trải nghiệm &amp; Bài học</h2>
+          <div class="reflection-grid">
+            <div class="ref-card">
+              <h3>Kỹ năng chính đạt được</h3>
+              <p>Từ quản lý tệp tin cơ bản đến prompt engineering nâng cao, từ đánh giá nguồn học thuật đến phân tích
+                đạo đức
+                AI — một vòng tròn kỹ năng số hoàn chỉnh.</p>
+            </div>
+            <div class="ref-card">
+              <h3>Thách thức thú vị nhất</h3>
+              <p>Bài 3 — Prompt Engineering: cách "nói chuyện" với AI quan trọng không kém năng lực của AI. Một prompt
+                tốt tạo
+                ra kết quả "Xuất sắc" từ cùng một model.</p>
+            </div>
+            <div class="ref-card">
+              <h3>Điều tâm đắc nhất</h3>
+              <p>Bài 6 thay đổi cách nhìn về AI: không phải công cụ thần kỳ hay mối đe dọa, mà là "người thực tập đắc
+                lực" cần
+                giám sát và hướng dẫn của con người.</p>
+            </div>
+            <div class="ref-card">
+              <h3>Định hướng tiếp theo</h3>
+              <p>Ứng dụng nguyên tắc CREATE và 7 nguyên tắc AI có trách nhiệm vào các đồ án chuyên ngành. Tiếp tục xây
+                dựng
+                portfolio như một sản phẩm sống.</p>
+            </div>
+          </div>
+
+
+          <footer>
+            <p><strong>Đỗ Minh Trí</strong> · MSSV 25023059 · K70A-AI2</p>
+            <p style="margin-top:.4rem">Nhập môn Công nghệ số và Ứng dụng Trí tuệ Nhân tạo · 2025 · Đại học Công nghệ –
+              ĐHQGHN
+            </p>
+          </footer>
+
+        </div>
       </div>
     </div>
-
-  </div>
-
-  <footer>
-    <p><strong>Đỗ Minh Trí</strong> · MSSV 25023059 · K70A-AI2</p>
-    <p style="margin-top:.4rem">Nhập môn Công nghệ số và Ứng dụng Trí tuệ Nhân tạo · 2025 · Đại học Công nghệ – ĐHQGHN
-    </p>
-  </footer>
+  </div><!-- /#fp-container -->
 
   <!-- ═══════════════════════════════════════
        FORMAT PANEL — chỉnh ảnh thủ công
@@ -2235,7 +2638,6 @@
         </div>
       </div>
       <div class="fmt-body">
-        <!-- Preview -->
         <div class="fmt-preview-area">
           <div class="fmt-preview-frame" id="fmt-preview-frame">
             <img id="fmt-preview-img" src="" alt="" draggable="false">
@@ -2243,7 +2645,6 @@
           </div>
           <div class="fmt-preview-hint">Cuộn để zoom · Kéo để căn chỉnh · Nhấp đúp để về mặc định</div>
         </div>
-        <!-- Controls -->
         <div class="fmt-controls">
           <div class="fmt-ctrl-group">
             <div class="fmt-ctrl-title">Chế độ vừa khung</div>
@@ -2254,24 +2655,18 @@
             </div>
           </div>
           <div class="fmt-ctrl-group">
-            <div class="fmt-slider-row">
-              <span class="fmt-slider-label">Phóng to / thu nhỏ</span>
-              <span class="fmt-slider-val" id="fmt-scale-val">100%</span>
-            </div>
+            <div class="fmt-slider-row"><span class="fmt-slider-label">Phóng to / thu nhỏ</span><span
+                class="fmt-slider-val" id="fmt-scale-val">100%</span></div>
             <input type="range" class="fmt-slider" id="fmt-scale-slider" min="20" max="400" value="100" step="1">
           </div>
           <div class="fmt-ctrl-group">
-            <div class="fmt-slider-row">
-              <span class="fmt-slider-label">Vị trí ngang (X)</span>
-              <span class="fmt-slider-val" id="fmt-tx-val">0</span>
-            </div>
+            <div class="fmt-slider-row"><span class="fmt-slider-label">Vị trí ngang (X)</span><span
+                class="fmt-slider-val" id="fmt-tx-val">0</span></div>
             <input type="range" class="fmt-slider" id="fmt-tx-slider" min="-150" max="150" value="0" step="1">
           </div>
           <div class="fmt-ctrl-group">
-            <div class="fmt-slider-row">
-              <span class="fmt-slider-label">Vị trí dọc (Y)</span>
-              <span class="fmt-slider-val" id="fmt-ty-val">0</span>
-            </div>
+            <div class="fmt-slider-row"><span class="fmt-slider-label">Vị trí dọc (Y)</span><span class="fmt-slider-val"
+                id="fmt-ty-val">0</span></div>
             <input type="range" class="fmt-slider" id="fmt-ty-slider" min="-150" max="150" value="0" step="1">
           </div>
           <div class="fmt-ctrl-group">
@@ -2343,6 +2738,7 @@
   </div>
 
   <script>
+
     /* ─── 1. SCROLL SPY ─── */
     const sections = document.querySelectorAll('.bai, #about, #reflection');
     const navItems = document.querySelectorAll('.nav-item');
@@ -2483,7 +2879,15 @@
       }
       ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
         const name = localStorage.getItem('docx_name_' + id);
-        if (name) setWordReady(id, name);
+        const b64 = localStorage.getItem('docx_data_' + id);
+        if (name && b64) {
+          try {
+            docxBuffers[id] = b64ToArrayBuffer(b64);
+            setWordReady(id, name);
+          } catch (e) { console.warn('[docx] restore failed', id, e); setWordReady(id, name); }
+        } else if (name) {
+          setWordReady(id, name); // tên còn nhưng data mất (localStorage bị xoá thủ công)
+        }
       });
     });
 
@@ -2601,9 +3005,10 @@
       fmtBtn.addEventListener('click', e => { e.stopPropagation(); openFmtPanel(slotId); });
       slot.appendChild(fmtBtn);
 
-      /* ── Cuộn chuột = zoom inline ── */
+      /* ── Cuộn chuột = zoom inline (chỉ khi editMode hoặc đang trong lightbox) ── */
       slot.addEventListener('wheel', e => {
         if (!slot.classList.contains('filled')) return;
+        if (!editMode) return; // present mode: không zoom inline, phải vào lightbox
         e.preventDefault(); e.stopPropagation();
         const z = getZS(slotId);
         const rect = slot.getBoundingClientRect();
@@ -2622,17 +3027,19 @@
         applySlotTransform(slot);
       }, { passive: false });
 
-      /* ── Nhấp đúp = reset zoom ── */
+      /* ── Nhấp đúp = reset zoom (chỉ editMode) ── */
       slot.addEventListener('dblclick', e => {
         if (!slot.classList.contains('filled')) return;
+        if (!editMode) return;
         clearTimeout(sClickTimer);
         e.stopPropagation();
         resetSlotZoom(slot);
       });
 
-      /* ── Mousedown = bắt đầu drag ── */
+      /* ── Mousedown = bắt đầu drag (chỉ editMode) ── */
       slot.addEventListener('mousedown', e => {
         if (!slot.classList.contains('filled')) return;
+        if (!editMode) return;
         if (e.button !== 0) return;
         sDragId = slotId;
         sDragMoved = false;
@@ -2710,6 +3117,7 @@
         const id = slot.id; if (!id) return;
         slot.addEventListener('touchstart', e => {
           if (!slot.classList.contains('filled')) return;
+          if (!editMode) return; // present mode: không cho pinch/pan inline
           if (e.touches.length === 1) {
             tSlotId = id; tPinch = null;
             tX0 = e.touches[0].clientX; tY0 = e.touches[0].clientY;
@@ -2792,7 +3200,6 @@
       lbSlotId = slotId;
       lbImgEl.src = '';
       lightbox.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
       updateLbEditButtons();
 
       lbImgEl.onload = () => {
@@ -2809,7 +3216,6 @@
       lbSlotId = null;
       /* Restore scroll only if doc-page is also closed */
       if (!document.getElementById('doc-page').classList.contains('open')) {
-        document.body.style.overflow = '';
       }
     }
 
@@ -3012,7 +3418,6 @@
 
       fmtUpdatePreview();
       fmtPanel.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
     }
 
     function closeFmtPanel() {
@@ -3020,7 +3425,6 @@
       fmtSlotId = null;
       if (!document.getElementById('doc-page').classList.contains('open') &&
         document.getElementById('lightbox').style.display === 'none') {
-        document.body.style.overflow = '';
       }
     }
 
@@ -3139,6 +3543,22 @@
       if (btn) btn.disabled = false;
     }
 
+    /* Chuyển Base64 string → ArrayBuffer */
+    function b64ToArrayBuffer(b64) {
+      const bin = atob(b64);
+      const buf = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+      return buf.buffer;
+    }
+
+    /* Chuyển ArrayBuffer → Base64 string */
+    function arrayBufferToB64(buf) {
+      let bin = '';
+      const bytes = new Uint8Array(buf);
+      for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin);
+    }
+
     function wdSetFile(baiId, file) {
       if (!file) return;
       const ext = file.name.split('.').pop().toLowerCase();
@@ -3146,7 +3566,12 @@
       const reader = new FileReader();
       reader.onload = e => {
         docxBuffers[baiId] = e.target.result;
-        try { localStorage.setItem('docx_name_' + baiId, file.name); } catch { }
+        try {
+          localStorage.setItem('docx_name_' + baiId, file.name);
+          localStorage.setItem('docx_data_' + baiId, arrayBufferToB64(e.target.result));
+        } catch (err) {
+          console.warn('[docx] Không lưu được vào localStorage (file có thể quá lớn):', err.message);
+        }
         setWordReady(baiId, file.name);
       };
       reader.readAsArrayBuffer(file);
@@ -3175,6 +3600,7 @@
       if (evt) { evt.stopPropagation(); evt.preventDefault(); }
       delete docxBuffers[baiId];
       localStorage.removeItem('docx_name_' + baiId);
+      localStorage.removeItem('docx_data_' + baiId);
       const drop = document.getElementById('wd-' + baiId);
       const nameEl = document.getElementById('wn-' + baiId);
       const btn = document.getElementById('vb-' + baiId);
@@ -3194,10 +3620,10 @@
 
     async function openDoc(baiId, num, title) {
       const buf = docxBuffers[baiId];
+
       document.getElementById('doc-topbar-num').textContent = num;
       document.getElementById('doc-topbar-title').textContent = title;
       docPage.classList.add('open');
-      document.body.style.overflow = 'hidden';
       document.getElementById('doc-scroll').scrollTop = 0;
 
       docLoading.style.display = 'flex';
@@ -3229,15 +3655,228 @@
 
     document.getElementById('doc-back').addEventListener('click', () => {
       docPage.classList.remove('open');
-      document.body.style.overflow = '';
     });
 
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && docPage.classList.contains('open')) {
         docPage.classList.remove('open');
-        document.body.style.overflow = '';
       }
     });
+
+
+
+    /* ══════════════════════════════════════════════════════
+       Word-drop click: chỉ trigger file picker khi chưa có file hoặc buffer mất
+       ══════════════════════════════════════════════════════ */
+    document.querySelectorAll('.word-drop').forEach(drop => {
+      drop.addEventListener('click', function (e) {
+        if (e.target.classList.contains('wd-del')) return;
+        if (!editMode) return;
+        const id = drop.id.replace('wd-', '');
+        const inp = drop.querySelector('input[type=file]');
+        if (!inp) return;
+        // Mở file picker: cả khi chưa có file lẫn khi buffer đã mất sau reload
+        inp.value = '';
+        inp.click();
+      });
+    });
+
+
+    /* ══════════════════════════════════════════════════════
+       SMART IMAGE FADE — vignette mask cho vùng thừa
+       ══════════════════════════════════════════════════════ */
+    function applySmartFade(slotId) {
+      const slot = document.getElementById(slotId); if (!slot) return;
+      const img = slot.querySelector('img'); if (!img || !img.naturalWidth) return;
+      img.classList.add('img-smart-fade');
+      const f = getFmt(slotId);
+      if (f.fitMode === 'contain') {
+        const slotW = slot.offsetWidth, slotH = slot.offsetHeight;
+        const imgW = img.naturalWidth, imgH = img.naturalHeight;
+        const scaleW = slotW / imgW, scaleH = slotH / imgH;
+        const cs = Math.min(scaleW, scaleH);
+        const fw = imgW * cs, fh = imgH * cs;
+        const px = Math.round((fw / slotW) * 47);
+        const py = Math.round((fh / slotH) * 47);
+        const mask = `radial-gradient(ellipse ${px}% ${py}% at 50% 50%, black 68%, transparent 100%)`;
+        img.style.webkitMaskImage = mask;
+        img.style.maskImage = mask;
+      } else {
+        img.style.webkitMaskImage = '';
+        img.style.maskImage = '';
+      }
+    }
+
+    // Patch applyFmtToSlot to run smart fade after
+    const _origApplyFmt = window.applyFmtToSlot || applyFmtToSlot;
+    window._patchedApplyFmt = function (id) { _origApplyFmt(id); setTimeout(() => applySmartFade(id), 60); };
+    // Patch applyImg
+    const _origApplyImg = applyImg;
+    function applyImgPatched(id, url) {
+      _origApplyImg(id, url);
+      const slot = document.getElementById(id);
+      if (slot) {
+        const img = slot.querySelector('img');
+        if (img) img.addEventListener('load', () => applySmartFade(id), { once: true });
+      }
+    }
+
+    // Override fmt apply button to use patched version
+    document.getElementById('fmt-apply-btn').addEventListener('click', () => { }, { capture: true });
+
+    /* ══════════════════════════════════════════════════════
+       FULLPAGE SLIDE ENGINE
+       ══════════════════════════════════════════════════════ */
+    (() => {
+      const TOTAL = 8;
+      let current = 0, animating = false;
+      const ANIM_DUR = 900;
+
+      const slides = Array.from(document.querySelectorAll('.fp-slide'));
+      const upBtn = document.getElementById('fp-up');
+      const downBtn = document.getElementById('fp-down');
+      const dotsEl = document.getElementById('fp-dots');
+      const scanline = document.getElementById('fp-scanline');
+
+      // Initialize positions
+      slides.forEach((s, i) => {
+        s.style.transition = 'none';
+        s.style.transform = i === 0 ? 'translateY(0%)' : 'translateY(100%)';
+        if (i === 0) s.classList.add('fp-active');
+      });
+      requestAnimationFrame(() => slides.forEach(s => { s.style.transition = ''; }));
+
+      // Build dots
+      slides.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'fp-dot' + (i === 0 ? ' fp-dot-active' : '');
+        dot.title = ['Hero', 'Bài 1', 'Bài 2', 'Bài 3', 'Bài 4', 'Bài 5', 'Bài 6', 'Tổng kết'][i] || 'Slide ' + (i + 1);
+        dot.addEventListener('click', () => goTo(i));
+        dotsEl.appendChild(dot);
+      });
+
+      function updateUI() {
+        dotsEl.querySelectorAll('.fp-dot').forEach((d, i) => d.classList.toggle('fp-dot-active', i === current));
+        upBtn.classList.toggle('fp-disabled', current === 0);
+        downBtn.classList.toggle('fp-disabled', current === TOTAL - 1);
+        document.querySelectorAll('.nav-item[data-slide]').forEach(a => {
+          a.classList.toggle('active', parseInt(a.dataset.slide) === current);
+        });
+      }
+
+      function goTo(idx) {
+        if (idx === current || animating) return;
+        if (idx < 0 || idx >= TOTAL) return;
+        animating = true;
+        const dir = idx > current ? 1 : -1;
+        const prev = current;
+        current = idx;
+
+        // Scanline effect
+        scanline.classList.remove('fp-scan-active');
+        void scanline.offsetWidth;
+        scanline.classList.add('fp-scan-active');
+
+        // Move slides
+        slides[prev].classList.remove('fp-active');
+        slides[prev].style.transform = dir > 0 ? 'translateY(-100%)' : 'translateY(100%)';
+        slides[current].style.transform = 'translateY(0%)';
+        slides[current].classList.add('fp-active');
+        slides[current].scrollTop = 0;
+
+        updateUI();
+
+        setTimeout(() => {
+          animating = false;
+          // Park all non-active
+          slides.forEach((s, i) => {
+            if (i !== current) {
+              s.classList.remove('fp-active');
+              s.style.transform = i < current ? 'translateY(-100%)' : 'translateY(100%)';
+            }
+          });
+          scanline.classList.remove('fp-scan-active');
+        }, ANIM_DUR + 50);
+      }
+
+      function next() { goTo(current + 1); }
+      function prev() { goTo(current - 1); }
+
+      upBtn.addEventListener('click', prev);
+      downBtn.addEventListener('click', next);
+
+      // Nav links
+      document.querySelectorAll('.nav-item[data-slide]').forEach(a => {
+        a.addEventListener('click', e => { e.preventDefault(); goTo(parseInt(a.dataset.slide)); });
+      });
+
+      // Keyboard
+      document.addEventListener('keydown', e => {
+        if (document.getElementById('doc-page').classList.contains('open')) return;
+        if (document.getElementById('lightbox').style.display !== 'none') return;
+        if (document.getElementById('fmt-panel').style.display !== 'none') return;
+        if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); next(); }
+        if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+      });
+
+      // Mouse wheel
+      let wCool = false;
+      window.addEventListener('wheel', e => {
+        if (e.target.closest('.img-slot.filled,.fmt-panel,.lightbox,.doc-page')) return;
+        if (document.getElementById('doc-page').classList.contains('open')) return;
+        if (document.getElementById('lightbox').style.display !== 'none') return;
+
+        // allow internal slide scroll
+        const slide = slides[current];
+        if (slide && slide.scrollHeight > slide.clientHeight + 6) {
+          const atBot = slide.scrollTop + slide.clientHeight >= slide.scrollHeight - 10;
+          const atTop = slide.scrollTop <= 6;
+          if (e.deltaY > 0 && !atBot) return;
+          if (e.deltaY < 0 && !atTop) return;
+        }
+        if (wCool) return;
+        wCool = true; setTimeout(() => { wCool = false; }, 1100);
+        if (e.deltaY > 0) next(); else prev();
+      }, { passive: true });
+
+      // Touch swipe
+      let tY0 = 0, tT0 = 0;
+      window.addEventListener('touchstart', e => {
+        if (e.target.closest('.img-slot,.fmt-panel,.lightbox,.doc-page')) return;
+        tY0 = e.touches[0].clientY; tT0 = Date.now();
+      }, { passive: true });
+      window.addEventListener('touchend', e => {
+        if (e.target.closest('.img-slot,.fmt-panel,.lightbox,.doc-page')) return;
+        const dy = tY0 - e.changedTouches[0].clientY;
+        if (Math.abs(dy) > 55 && Date.now() - tT0 < 600) { if (dy > 0) next(); else prev(); }
+      }, { passive: true });
+
+      // Slide bg input
+      document.querySelectorAll('input[data-slide-bg]').forEach(inp => {
+        inp.addEventListener('change', function () {
+          const idx = parseInt(this.dataset.slideBg);
+          const file = this.files[0]; if (!file) return;
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const img = document.getElementById('fpbg-img-' + idx);
+            if (img) { img.src = ev.target.result; img.style.display = ''; }
+            try { localStorage.setItem('fp_bg_' + idx, ev.target.result); } catch { }
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      // Restore saved bg images
+      for (let i = 0; i < TOTAL; i++) {
+        try {
+          const s = localStorage.getItem('fp_bg_' + i);
+          if (s) { const img = document.getElementById('fpbg-img-' + i); if (img) { img.src = s; img.style.display = ''; } }
+        } catch { }
+      }
+
+      updateUI();
+    })();
+
   </script>
 </body>
 
