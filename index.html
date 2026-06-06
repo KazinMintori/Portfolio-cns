@@ -2977,7 +2977,7 @@
     }
 
     /* Trạng thái — nguồn duy nhất của sự thật, đồng bộ với /data.json trên repo */
-    let cloudData = { slots: {}, avatar: null, slideBg: {}, docx: {} };
+    let cloudData = { slots: {}, avatar: null, slideBg: {}, docx: {}, slotFmt: {}, bgAdjust: {} };
 
     function showCloudSyncStatus(message, isError = false) {
       if (!editMode) return;
@@ -3030,6 +3030,8 @@
       const json = JSON.stringify(cloudData, null, 2);
       const b64 = btoa(unescape(encodeURIComponent(json)));
       await ghPutFile(GH_DATA_PATH, b64, 'update data.json');
+      /* Sau khi ghi xong, tạm dừng poll 12s để tránh tự apply lại dữ liệu mình vừa push */
+      if (typeof pausePollAfterWrite === 'function') pausePollAfterWrite();
     }
 
     async function writeDataJsonOrWarn() {
@@ -3140,7 +3142,9 @@
     function getFmt(id) {
       if (!slotFmt[id]) {
         try {
-          const saved = JSON.parse(localStorage.getItem('portfolio_fmt_' + id) || 'null');
+          /* Ưu tiên cloud data; fallback localStorage */
+          const fromCloud = cloudData.slotFmt && cloudData.slotFmt[id];
+          const saved = fromCloud || JSON.parse(localStorage.getItem('portfolio_fmt_' + id) || 'null');
           slotFmt[id] = saved || { fitMode: 'cover', s: 1, tx: 0, ty: 0 };
         } catch { slotFmt[id] = { fitMode: 'cover', s: 1, tx: 0, ty: 0 }; }
       }
@@ -3148,6 +3152,10 @@
     }
     function saveFmt(id) {
       try { localStorage.setItem('portfolio_fmt_' + id, JSON.stringify(slotFmt[id])); } catch { }
+      /* Đồng bộ lên cloud để các thiết bị khác nhận được */
+      cloudData.slotFmt = cloudData.slotFmt || {};
+      cloudData.slotFmt[id] = slotFmt[id];
+      scheduleWriteDataJson();
     }
     function setSlotFitClass(slot, fitMode) {
       slot.classList.remove('fit-cover', 'fit-contain', 'fit-fill', 'fit-custom');
@@ -3215,107 +3223,177 @@
       if (img.complete && img.naturalWidth) applyFmtToSlot(id);
     }
 
+    /* ─────────────────────────────────────────────────────────────────────
+       HÀM TỔNG HỢP: migrate raw JSON → schema chuẩn
+    ───────────────────────────────────────────────────────────────────── */
+    function migrateRaw(data) {
+      const out = { slots: {}, avatar: null, slideBg: {}, docx: {}, slotFmt: {}, bgAdjust: {} };
+      if (data.slots || data.avatar !== undefined || data.slideBg || data.docx) {
+        Object.assign(out, {
+          slots: data.slots || {},
+          avatar: data.avatar || null,
+          slideBg: data.slideBg || {},
+          docx: data.docx || {},
+          slotFmt: data.slotFmt || {},
+          bgAdjust: data.bgAdjust || {}
+        });
+      } else {
+        Object.keys(data).forEach(k => {
+          if (k === '__avatar') out.avatar = data[k];
+          else if (k.startsWith('__slidebg_')) out.slideBg[k.slice('__slidebg_'.length)] = data[k];
+          else if (k.startsWith('__docx_')) out.docx[k.slice('__docx_'.length)] = data[k];
+          else if (!k.startsWith('__')) out.slots[k] = data[k];
+        });
+      }
+      /* Chuẩn hóa URL: jsDelivr cache rất lâu → dùng raw cho ảnh & docx */
+      const cdnToRaw = u => u ? u.replace(
+        /https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^@]+)@([^/]+)\//,
+        'https://raw.githubusercontent.com/$1/$2/$3/'
+      ) : u;
+      Object.keys(out.docx).forEach(id => { if (out.docx[id]?.url) out.docx[id].url = cdnToRaw(out.docx[id].url); });
+      const ns = {};
+      Object.keys(out.slideBg).forEach(k => { ns[String(k)] = cdnToRaw(out.slideBg[k]); });
+      out.slideBg = ns;
+      return out;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────
+       HÀM TỔNG HỢP: apply 1 snapshot cloud vào UI
+       isFirstLoad=true  → chạy offline-fallback nếu data null
+       isFirstLoad=false → chỉ cập nhật những gì thay đổi (polling)
+    ───────────────────────────────────────────────────────────────────── */
+    async function applyCloudSnapshot(data, isFirstLoad) {
+      if (!data) {
+        if (!isFirstLoad) return;
+        /* Offline fallback chỉ cho lần load đầu */
+        document.querySelectorAll('.img-slot').forEach(s => {
+          const id = s.getAttribute('id');
+          const saved = localStorage.getItem('portfolio_img_url_' + id);
+          if (saved) applyImg(id, saved);
+        });
+        ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
+          const name = localStorage.getItem('docx_name_' + id);
+          const b64 = localStorage.getItem('docx_data_' + id);
+          if (name && b64) { try { docxBuffers[id] = b64ToArrayBuffer(b64); setWordReady(id, name); } catch { setWordReady(id, name); } }
+          else if (name) setWordReady(id, name);
+        });
+        return;
+      }
+
+      /* Nếu đang ghi (chính tab này vừa push) thì bỏ qua để tránh self-overwrite */
+      if (_writeInFlight) return;
+
+      const snap = migrateRaw(data);
+      cloudData = snap;
+
+      /* 1) Ảnh bài tập */
+      Object.keys(snap.slots).forEach(id => applyImg(id, snap.slots[id]));
+      document.querySelectorAll('.img-slot').forEach(s => {
+        if (!snap.slots[s.id]) {
+          const img = s.querySelector('img'); if (img) img.remove();
+          s.classList.remove('filled', 'zoomed');
+        }
+      });
+
+      /* 2) Avatar */
+      if (snap.avatar) {
+        let av = document.querySelector('#avatarBox img');
+        if (!av) { av = document.createElement('img'); document.getElementById('avatarBox').appendChild(av); }
+        if (av.getAttribute('src') !== snap.avatar) av.src = snap.avatar;
+      }
+
+      /* 3) Ảnh nền slide */
+      window.__pendingSlideBg = {};
+      Object.keys(snap.slideBg).forEach(k => { window.__pendingSlideBg[k] = snap.slideBg[k]; });
+      window.__cloudDataReady = true;
+      window.dispatchEvent(new Event('cloudDataReady'));
+
+      /* 4) slotFmt (zoom/pan/fit ảnh bài tập) */
+      Object.keys(snap.slotFmt).forEach(id => {
+        slotFmt[id] = snap.slotFmt[id];
+        try { localStorage.setItem('portfolio_fmt_' + id, JSON.stringify(slotFmt[id])); } catch { }
+        applyFmtToSlot(id);
+      });
+
+      /* 5) bgAdjust (vị trí/scale nền slide) */
+      Object.keys(snap.bgAdjust).forEach(idx => {
+        const adj = snap.bgAdjust[idx]; if (!adj) return;
+        fpBgAdjust[idx] = adj;
+        try { localStorage.setItem('fp_bg_adjust_' + idx, JSON.stringify(adj)); } catch { }
+        fpApplyBgAdjust(parseInt(idx));
+      });
+
+      /* 6) Docx — chỉ fetch lại nếu URL thay đổi */
+      const BAIS = ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'];
+      Promise.all(Object.keys(snap.docx).map(async baiId => {
+        const meta = snap.docx[baiId]; if (!meta?.url) return;
+        setWordReady(baiId, meta.name || 'document.docx');
+        const prevUrl = cloudData.docx[baiId]?.url;
+        if (docxBuffers[baiId] && prevUrl === meta.url) return;
+        docxPending[baiId] = true;
+        try { const r = await fetch(meta.url); if (r.ok) docxBuffers[baiId] = await r.arrayBuffer(); }
+        catch (e) { console.warn('[docx] download failed', baiId, e); }
+        finally { delete docxPending[baiId]; }
+      })).catch(e => console.warn('[docx] batch load error', e));
+      /* Xoá docx bị remove từ trình duyệt khác */
+      BAIS.forEach(id => {
+        if (!snap.docx[id] && docxBuffers[id]) {
+          delete docxBuffers[id];
+          const nameEl = document.getElementById('wn-' + id); if (nameEl) nameEl.textContent = '';
+          const drop = document.getElementById('wd-' + id); if (drop) drop.classList.remove('has-file');
+          const vb = document.getElementById('vb-' + id); if (vb) vb.style.display = 'none';
+        }
+      });
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────
+       AUTO-SYNC: polling mỗi 30s + ngay khi tab được focus lại
+       Sau khi tab này ghi xong, tạm dừng poll 12s để tránh self-bounce
+    ───────────────────────────────────────────────────────────────────── */
+    let _lastPollStr = '';
+    let _pollPaused = false;
+
+    async function pollCloudData() {
+      if (_pollPaused || _writeInFlight) return;
+      try {
+        const data = await readDataJson();
+        const str = JSON.stringify(data);
+        if (str && str !== _lastPollStr) {
+          _lastPollStr = str;
+          await applyCloudSnapshot(data, false);
+          showCloudSyncStatus('Đã cập nhật từ cloud ☁️');
+        }
+      } catch { /* mạng lỗi — bỏ qua */ }
+    }
+
+    function pausePollAfterWrite() {
+      _pollPaused = true;
+      setTimeout(() => {
+        _pollPaused = false;
+        readDataJson().then(d => { if (d) _lastPollStr = JSON.stringify(d); }).catch(() => { });
+      }, 12000);
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────
+       LOAD ĐẦU TIÊN + khởi động polling
+    ───────────────────────────────────────────────────────────────────── */
     window.addEventListener('DOMContentLoaded', async () => {
       /* avatar fallback từ localStorage trong khi chờ cloud */
       const savedAv = localStorage.getItem('portfolio_avatar');
       if (savedAv) { const av = document.querySelector('#avatarBox img'); if (av) av.src = savedAv; }
 
       const data = await readDataJson();
-      if (data) {
-        /* migrate format cũ (JSONBin) → format mới nếu có */
-        const migrated = { slots: {}, avatar: null, slideBg: {}, docx: {} };
-        if (data.slots || data.avatar !== undefined || data.slideBg || data.docx) {
-          Object.assign(migrated, { slots: data.slots || {}, avatar: data.avatar || null, slideBg: data.slideBg || {}, docx: data.docx || {} });
-        } else {
-          Object.keys(data).forEach(k => {
-            if (k === '__avatar') migrated.avatar = data[k];
-            else if (k.startsWith('__slidebg_')) migrated.slideBg[k.slice('__slidebg_'.length)] = data[k];
-            else if (k.startsWith('__docx_')) migrated.docx[k.slice('__docx_'.length)] = data[k];
-            else if (!k.startsWith('__')) migrated.slots[k] = data[k];
-          });
-        }
-        cloudData = migrated;
+      _lastPollStr = JSON.stringify(data);
+      await applyCloudSnapshot(data, true);
 
-        /* Migration: đổi URL docx từ jsDelivr → raw.githubusercontent
-           (jsDelivr HTTP 403 với .docx — chỉ phục vụ web assets) */
-        Object.keys(cloudData.docx).forEach(id => {
-          const meta = cloudData.docx[id];
-          if (meta && meta.url && meta.url.includes('cdn.jsdelivr.net')) {
-            meta.url = meta.url.replace(
-              /https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^@]+)@([^/]+)\//,
-              'https://raw.githubusercontent.com/$1/$2/$3/'
-            );
-          }
+      /* Bắt đầu polling sau 3s (để tránh fetch chồng lên lần load đầu) */
+      setTimeout(() => {
+        setInterval(pollCloudData, 30000);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') pollCloudData();
         });
-
-        /* 1) ảnh bài tập */
-        Object.keys(cloudData.slots).forEach(id => applyImg(id, cloudData.slots[id]));
-
-        /* 2) avatar */
-        if (cloudData.avatar) {
-          const av = document.querySelector('#avatarBox img');
-          if (av) av.src = cloudData.avatar;
-          else {
-            const box = document.getElementById('avatarBox');
-            if (box) { const i = document.createElement('img'); i.src = cloudData.avatar; box.appendChild(i); }
-          }
-        }
-
-        /* 3) slide backgrounds — migrate jsDelivr → raw, normalize key thành string */
-        const normalizedSlideBg = {};
-        Object.keys(cloudData.slideBg).forEach(idx => {
-          let url = cloudData.slideBg[idx];
-          /* jsDelivr cache ảnh rất lâu — chuyển về raw.githubusercontent để luôn mới */
-          if (url && url.includes('cdn.jsdelivr.net')) {
-            url = url.replace(
-              /https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^@]+)@([^/]+)\//,
-              'https://raw.githubusercontent.com/$1/$2/$3/'
-            );
-          }
-          normalizedSlideBg[String(idx)] = url;
-        });
-        cloudData.slideBg = normalizedSlideBg;
-        window.__pendingSlideBg = window.__pendingSlideBg || {};
-        Object.keys(cloudData.slideBg).forEach(idx => {
-          window.__pendingSlideBg[String(idx)] = cloudData.slideBg[idx];
-        });
-        /* Thông báo cho slide bg restore loop rằng cloud data đã sẵn sàng */
-        window.__cloudDataReady = true;
-        window.dispatchEvent(new Event('cloudDataReady'));
-
-        /* 4) docx — tải lại ArrayBuffer từ URL để mammoth render được */
-        /* Dùng Promise.all thay forEach(async) để buffer sẵn sàng trước khi user bấm xem */
-        const docxKeys = Object.keys(cloudData.docx);
-        Promise.all(docxKeys.map(async baiId => {
-          const meta = cloudData.docx[baiId];
-          if (!meta || !meta.url) return;
-          setWordReady(baiId, meta.name || 'document.docx');
-          docxPending[baiId] = true;
-          try {
-            const r = await fetch(meta.url);
-            if (r.ok) docxBuffers[baiId] = await r.arrayBuffer();
-          } catch (e) {
-            console.warn('[docx] download failed', baiId, e);
-          } finally {
-            delete docxPending[baiId];
-          }
-        })).catch(e => console.warn('[docx] batch load error', e));
-      } else {
-        /* offline fallback: localStorage */
-        document.querySelectorAll('.img-slot').forEach(s => {
-          const id = s.getAttribute('id'), saved = localStorage.getItem('portfolio_img_url_' + id);
-          if (saved) applyImg(id, saved);
-        });
-        ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
-          const name = localStorage.getItem('docx_name_' + id);
-          const b64 = localStorage.getItem('docx_data_' + id);
-          if (name && b64) {
-            try { docxBuffers[id] = b64ToArrayBuffer(b64); setWordReady(id, name); }
-            catch (e) { setWordReady(id, name); }
-          } else if (name) { setWordReady(id, name); }
-        });
-      }
-
+        window.addEventListener('focus', pollCloudData);
+      }, 3000);
     });
 
     /* ─── 6. AVATAR ─── */
@@ -4340,7 +4418,9 @@
       function fpGetBgAdjust(idx) {
         if (!fpBgAdjust[idx]) {
           try {
-            fpBgAdjust[idx] = JSON.parse(localStorage.getItem('fp_bg_adjust_' + idx) || 'null') || { scale: 1, x: 50, y: 50 };
+            /* Ưu tiên cloud data; fallback localStorage */
+            const fromCloud = cloudData.bgAdjust && cloudData.bgAdjust[String(idx)];
+            fpBgAdjust[idx] = fromCloud || JSON.parse(localStorage.getItem('fp_bg_adjust_' + idx) || 'null') || { scale: 1, x: 50, y: 50 };
           } catch {
             fpBgAdjust[idx] = { scale: 1, x: 50, y: 50 };
           }
@@ -4350,6 +4430,10 @@
 
       function fpSaveBgAdjust(idx) {
         try { localStorage.setItem('fp_bg_adjust_' + idx, JSON.stringify(fpGetBgAdjust(idx))); } catch { }
+        /* Đồng bộ lên cloud để các thiết bị khác nhận được */
+        cloudData.bgAdjust = cloudData.bgAdjust || {};
+        cloudData.bgAdjust[String(idx)] = fpGetBgAdjust(idx);
+        scheduleWriteDataJson();
       }
 
       function fpApplyBgAdjust(idx) {
