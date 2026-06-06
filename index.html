@@ -2911,7 +2911,10 @@
        ────────────────────────────────────────────────────────────────── */
 
     /* ⚙️ CẤU HÌNH — sửa WORKER_URL sau khi deploy Worker */
-    const WORKER_URL = 'https://portfolio-worker.YOUR_SUBDOMAIN.workers.dev';
+    /* 👇 Thay YOUR_SUBDOMAIN bằng subdomain thực của bạn trên Cloudflare Workers */
+    const WORKER_URL = 'https://portfolio-worker.kazinmintori.workers.dev';
+    // ↑ Ví dụ: nếu worker tên "portfolio-worker" và account subdomain là "kazinmintori"
+    //   → https://portfolio-worker.kazinmintori.workers.dev
     const GH_OWNER = 'kazinmintori';   // chỉ dùng để build jsDelivr URL cho UI
     const GH_REPO = 'Portfolio-cns';
     const GH_BRANCH = 'main';
@@ -2937,12 +2940,32 @@
     async function ghUploadFile(file, prefix) {
       if (!cfHasPassword()) throw new Error('Chưa nhập mật khẩu edit. Bấm nút ☁️ ở góc phải dưới.');
       const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
-      const b64 = await fileToBase64(file);
-      const res = await fetch(WORKER_URL + '/api/upload', {
-        method: 'POST',
-        headers: { ...cfAuthHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prefix, filename: file.name, contentBase64: b64, ext }),
-      });
+
+      /* File lớn hoặc docx/pdf → dùng multipart binary để tránh giới hạn base64 của Worker */
+      const NON_JSON = ['docx', 'doc', 'pdf', 'zip', 'xlsx', 'pptx'];
+      const useMultipart = NON_JSON.includes(ext) || file.size > 512 * 1024;
+
+      let res;
+      if (useMultipart) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('filename', file.name);
+        fd.append('prefix', prefix);
+        fd.append('ext', ext);
+        res = await fetch(WORKER_URL + '/api/upload', {
+          method: 'POST',
+          headers: { ...cfAuthHeaders() }, // KHÔNG set Content-Type — browser tự thêm boundary
+          body: fd,
+        });
+      } else {
+        const b64 = await fileToBase64(file);
+        res = await fetch(WORKER_URL + '/api/upload', {
+          method: 'POST',
+          headers: { ...cfAuthHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prefix, filename: file.name, contentBase64: b64, ext }),
+        });
+      }
+
       if (!res.ok) {
         const t = await res.text().catch(() => '');
         if (res.status === 401) throw new Error('Sai mật khẩu edit. Vào ☁️ để nhập lại.');
