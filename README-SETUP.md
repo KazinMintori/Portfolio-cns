@@ -49,7 +49,18 @@ Sau khi cấu hình, nút sẽ thành `☁️ GitHub`. Mọi upload sau đó đ�
 - **Bảo mật**: token chỉ ở máy của bạn. Nếu lộ, vào https://github.com/settings/tokens revoke ngay.
 - **Đổi branch**: nếu Pages của bạn build từ `gh-pages` thay vì `main`, sửa `GH_BRANCH` ở đầu phần script trong `index.html`.
 
-## 6. Đổi chủ sở hữu / repo
+## 6. Nếu mở bằng trình duyệt khác bị mất ảnh
+
+Nếu một trình duyệt thấy ảnh nhưng trình duyệt khác không thấy, gần như chắc chắn ảnh đang chỉ nằm trong bộ nhớ local của trình duyệt cũ (`localStorage`/IndexedDB), chưa được ghi vào repo.
+
+Kiểm tra nhanh:
+
+1. Vào repo GitHub và mở `data.json`.
+2. Nếu `"slots": {}` vẫn rỗng, ảnh chưa được public cho người xem khác.
+3. Sau khi upload ảnh từ trang, phải thấy thêm commit mới cho file ảnh trong `assets/uploads/` và commit cập nhật `data.json`.
+4. Nếu trang báo lỗi `data.json chưa được cập nhật`, tạo lại token với quyền **Contents: Read and write**, đúng repo `Portfolio-cns`, rồi upload lại ảnh.
+
+## 7. Đổi chủ sở hữu / repo
 
 Nếu fork sang tài khoản khác, sửa 3 dòng đầu trong script:
 ```js

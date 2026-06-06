@@ -2962,6 +2962,28 @@
     /* Trạng thái — nguồn duy nhất của sự thật, đồng bộ với /data.json trên repo */
     let cloudData = { slots: {}, avatar: null, slideBg: {}, docx: {} };
 
+    function showCloudSyncStatus(message, isError = false) {
+      if (!editMode) return;
+      let box = document.getElementById('cloud-sync-status');
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'cloud-sync-status';
+        box.style.cssText = 'position:fixed;right:16px;bottom:64px;z-index:9999;max-width:min(420px,calc(100vw - 32px));padding:.7rem .85rem;border-radius:8px;font-size:13px;line-height:1.45;font-family:inherit;box-shadow:0 10px 30px rgba(0,0,0,.42);';
+        document.body.appendChild(box);
+      }
+      box.textContent = message;
+      box.style.display = 'block';
+      box.style.color = isError ? '#ffd6d6' : '#d7fffb';
+      box.style.background = isError ? 'rgba(92, 24, 24, .96)' : 'rgba(13, 55, 52, .96)';
+      box.style.border = isError ? '1px solid rgba(217, 122, 120, .7)' : '1px solid rgba(120, 216, 208, .55)';
+      clearTimeout(box._hideTimer);
+      if (!isError) box._hideTimer = setTimeout(() => { box.style.display = 'none'; }, 2800);
+    }
+
+    function describeDataJsonFailure(e) {
+      return 'File đã lưu lên GitHub nhưng data.json chưa được cập nhật, nên trình duyệt khác sẽ chưa thấy thay đổi. Kiểm tra token có quyền Contents: Read and write và đúng branch main. Chi tiết: ' + (e && e.message ? e.message : e);
+    }
+
     /* Debounce ghi data.json để gộp nhiều thay đổi liên tiếp thành 1 commit */
     let _writeTimer = null, _writeInFlight = false, _writeDirty = false;
     function scheduleWriteDataJson() {
@@ -2972,8 +2994,14 @@
         if (_writeInFlight) { scheduleWriteDataJson(); return; }
         _writeInFlight = true;
         _writeDirty = false;
-        try { await writeDataJsonNow(); }
-        catch (e) { console.warn('[data.json] write failed', e); }
+        try {
+          await writeDataJsonNow();
+          showCloudSyncStatus('Đã đồng bộ data.json lên GitHub.');
+        }
+        catch (e) {
+          console.warn('[data.json] write failed', e);
+          showCloudSyncStatus(describeDataJsonFailure(e), true);
+        }
         finally {
           _writeInFlight = false;
           if (_writeDirty) scheduleWriteDataJson();
@@ -2985,6 +3013,20 @@
       const json = JSON.stringify(cloudData, null, 2);
       const b64 = btoa(unescape(encodeURIComponent(json)));
       await ghPutFile(GH_DATA_PATH, b64, 'update data.json');
+    }
+
+    async function writeDataJsonOrWarn() {
+      try {
+        await writeDataJsonNow();
+        showCloudSyncStatus('Đã đồng bộ data.json lên GitHub.');
+        return true;
+      } catch (e) {
+        console.warn('[data.json] write failed', e);
+        const message = describeDataJsonFailure(e);
+        showCloudSyncStatus(message, true);
+        alert(message);
+        return false;
+      }
     }
 
     async function readDataJson() {
@@ -3252,7 +3294,7 @@
         if (!img) { img = document.createElement('img'); box.appendChild(img); }
         img.src = url;
         cloudData.avatar = url;
-        scheduleWriteDataJson();
+        await writeDataJsonOrWarn();
       } catch (e) {
         alert('Lỗi upload avatar: ' + e.message);
       } finally { loader.remove(); }
@@ -3270,7 +3312,7 @@
         const { url } = await ghUploadFile(file, 'slot-' + slotId);
         applyImg(slotId, url);
         cloudData.slots[slotId] = url;
-        scheduleWriteDataJson();
+        await writeDataJsonOrWarn();
       } catch (e) {
         alert('Lỗi upload: ' + e.message);
       } finally { loader.remove(); }
@@ -3283,7 +3325,7 @@
       const inp = slot.querySelector('input[type=file]'); if (inp) inp.value = '';
       localStorage.removeItem('portfolio_img_url_' + id);
       delete cloudData.slots[id];
-      scheduleWriteDataJson();
+      writeDataJsonOrWarn();
     }
 
     /* ─── 8. INLINE ZOOM / PAN CHO IMG-SLOT ─── */
@@ -3935,7 +3977,7 @@
         try {
           const { url } = await ghUploadFile(file, 'docx-' + baiId);
           cloudData.docx[baiId] = { url, name: file.name };
-          scheduleWriteDataJson();
+          await writeDataJsonOrWarn();
           if (nameEl) nameEl.textContent = '📎 ' + file.name;
         } catch (err) {
           console.warn('[docx] cloud upload failed', err);
@@ -3971,7 +4013,7 @@
       localStorage.removeItem('docx_name_' + baiId);
       localStorage.removeItem('docx_data_' + baiId);
       delete cloudData.docx[baiId];
-      scheduleWriteDataJson();
+      writeDataJsonOrWarn();
       const drop = document.getElementById('wd-' + baiId);
       const nameEl = document.getElementById('wn-' + baiId);
       const btn = document.getElementById('vb-' + baiId);
@@ -4373,7 +4415,7 @@
             const { url } = await ghUploadFile(file, 'slidebg-' + idx);
             cloudData.slideBg[idx] = url;
             fpApplyBg(idx, url);
-            scheduleWriteDataJson();
+            await writeDataJsonOrWarn();
           } catch (e) {
             console.warn('[slide-bg] cloud upload failed', e);
             alert('Không upload được ảnh nền: ' + e.message);
