@@ -2815,6 +2815,10 @@
         <span class="doc-topbar-num" id="doc-topbar-num"></span>
         <span class="doc-topbar-title" id="doc-topbar-title"></span>
       </div>
+      <a id="doc-download-btn" href="#" target="_blank" download
+        style="display:none;margin-left:auto;padding:.45rem 1rem;border-radius:8px;background:rgba(120,216,208,.12);border:1px solid rgba(120,216,208,.35);color:var(--accent);font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">
+        📥 Tải xuống
+      </a>
     </div>
     <div class="doc-scroll" id="doc-scroll">
       <div class="doc-loading" id="doc-loading" style="display:none">
@@ -4187,6 +4191,17 @@
       docPage.classList.add('open');
       document.getElementById('doc-scroll').scrollTop = 0;
 
+      /* Hiện/ẩn nút download tùy theo có URL hay không */
+      const dlBtn = document.getElementById('doc-download-btn');
+      const meta = cloudData.docx && cloudData.docx[baiId];
+      if (dlBtn && meta && meta.url) {
+        dlBtn.href = meta.url;
+        dlBtn.download = meta.name || 'document.docx';
+        dlBtn.style.display = 'inline-flex';
+      } else if (dlBtn) {
+        dlBtn.style.display = 'none';
+      }
+
       docLoading.style.display = 'flex';
       docRender.style.display = 'none';
       docEmpty.style.display = 'none';
@@ -4205,15 +4220,35 @@
         });
       }
 
-      const buf = docxBuffers[baiId];
+      let buf = docxBuffers[baiId];
+
+      /* Nếu buffer chưa có nhưng có URL → thử fetch lại một lần nữa */
+      if (!buf) {
+        const meta = cloudData.docx && cloudData.docx[baiId];
+        if (meta && meta.url) {
+          try {
+            const r = await fetch(meta.url + '?t=' + Date.now());
+            if (r.ok) {
+              buf = await r.arrayBuffer();
+              docxBuffers[baiId] = buf;
+            }
+          } catch (e) {
+            console.warn('[openDoc] retry fetch failed', e);
+          }
+        }
+      }
 
       if (!buf) {
-        /* Kiểm tra có URL trên cloud không — nếu có nhưng fetch lỗi thì báo khác */
         const meta = cloudData.docx && cloudData.docx[baiId];
         docLoading.style.display = 'none';
-        docEmptyMsg.textContent = meta && meta.url
-          ? '⚠️ Không tải được file từ cloud. Thử tải lại trang hoặc kiểm tra kết nối.'
-          : 'Chưa có file Word nào được chèn cho bài này.';
+        if (meta && meta.url) {
+          /* Có URL nhưng không fetch được → cho nút tải xuống trực tiếp */
+          docEmptyMsg.innerHTML =
+            '⚠️ Không render được file trực tiếp.<br>' +
+            '<a href="' + meta.url + '" target="_blank" download style="color:var(--accent);text-decoration:underline;margin-top:.5rem;display:inline-block">📥 Tải file ' + (meta.name || 'Word') + ' về máy</a>';
+        } else {
+          docEmptyMsg.textContent = 'Chưa có file Word nào được chèn cho bài này.';
+        }
         docEmpty.style.display = 'flex';
         return;
       }
