@@ -3261,11 +3261,27 @@
           }
         }
 
-        /* 3) slide backgrounds — lưu string key để restore loop đọc đúng */
+        /* 3) slide backgrounds — migrate jsDelivr → raw, normalize key thành string */
+        const normalizedSlideBg = {};
+        Object.keys(cloudData.slideBg).forEach(idx => {
+          let url = cloudData.slideBg[idx];
+          /* jsDelivr cache ảnh rất lâu — chuyển về raw.githubusercontent để luôn mới */
+          if (url && url.includes('cdn.jsdelivr.net')) {
+            url = url.replace(
+              /https:\/\/cdn\.jsdelivr\.net\/gh\/([^/]+)\/([^@]+)@([^/]+)\//,
+              'https://raw.githubusercontent.com/$1/$2/$3/'
+            );
+          }
+          normalizedSlideBg[String(idx)] = url;
+        });
+        cloudData.slideBg = normalizedSlideBg;
         window.__pendingSlideBg = window.__pendingSlideBg || {};
         Object.keys(cloudData.slideBg).forEach(idx => {
           window.__pendingSlideBg[String(idx)] = cloudData.slideBg[idx];
         });
+        /* Thông báo cho slide bg restore loop rằng cloud data đã sẵn sàng */
+        window.__cloudDataReady = true;
+        window.dispatchEvent(new Event('cloudDataReady'));
 
         /* 4) docx — tải lại ArrayBuffer từ URL để mammoth render được */
         /* Dùng Promise.all thay forEach(async) để buffer sẵn sàng trước khi user bấm xem */
@@ -4464,8 +4480,10 @@
           reader.readAsDataURL(file);
           /* upload GitHub */
           try {
-            const { url } = await ghUploadFile(file, 'slidebg-' + idx);
-            cloudData.slideBg[idx] = url;
+            const { path } = await ghUploadFile(file, 'slidebg-' + idx);
+            /* Luôn dùng raw.githubusercontent để tránh jsDelivr cache hàng giờ */
+            const url = ghRawUrl(path);
+            cloudData.slideBg[String(idx)] = url;
             fpApplyBg(idx, url);
             await writeDataJsonOrWarn();
           } catch (e) {
@@ -4477,13 +4495,27 @@
 
       // Restore saved bg images — ưu tiên cloud URL nếu có
       fpCreateBgTools();
-      for (let i = 0; i < TOTAL; i++) {
-        fpApplyBgAdjust(i);
-        const si = String(i); /* JSON key luôn là string */
-        const cloudUrl = (window.__pendingSlideBg && window.__pendingSlideBg[si])
-          || cloudData.slideBg[si];
-        if (cloudUrl) fpApplyBg(i, cloudUrl);
-        else fpGetBg(i).then(src => fpApplyBg(i, src));
+
+      /* Hàm apply bg cho tất cả slides — gọi ngay và lại sau khi cloud data sẵn sàng */
+      function fpRestoreAllBg() {
+        for (let i = 0; i < TOTAL; i++) {
+          fpApplyBgAdjust(i);
+          const si = String(i);
+          const cloudUrl = (window.__pendingSlideBg && window.__pendingSlideBg[si])
+            || cloudData.slideBg[si];
+          if (cloudUrl) fpApplyBg(i, cloudUrl);
+          else fpGetBg(i).then(src => { if (src) fpApplyBg(i, src); });
+        }
+      }
+
+      /* Chạy ngay để apply ảnh từ IndexedDB/localStorage (offline fallback) */
+      fpRestoreAllBg();
+
+      /* Chạy lại sau khi DOMContentLoaded fetch cloud data xong — đảm bảo ảnh cloud được apply */
+      if (window.__cloudDataReady) {
+        fpRestoreAllBg();
+      } else {
+        window.addEventListener('cloudDataReady', fpRestoreAllBg, { once: true });
       }
 
       updateUI();
