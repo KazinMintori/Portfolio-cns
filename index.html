@@ -2905,25 +2905,25 @@
        Trạng thái (URL nào ứng với slot nào) lưu trong /data.json ở gốc repo.
        Người xem không cần token; chỉ chủ trang cần token khi UPLOAD.
        ────────────────────────────────────────────────────────────────────── */
-    const GH_OWNER = 'kazinmintori';
+    /* ─── 5. CLOUDFLARE WORKER STORAGE ───────────────────────────────────
+       Thay thế GitHub API trực tiếp. Token lưu server-side trong Worker.
+       Client chỉ cần WORKER_URL và EDIT_PASSWORD (localStorage).
+       ────────────────────────────────────────────────────────────────── */
+
+    /* ⚙️ CẤU HÌNH — sửa WORKER_URL sau khi deploy Worker */
+    const WORKER_URL = 'https://portfolio-worker.YOUR_SUBDOMAIN.workers.dev';
+    const GH_OWNER = 'kazinmintori';   // chỉ dùng để build jsDelivr URL cho UI
     const GH_REPO = 'Portfolio-cns';
     const GH_BRANCH = 'main';
-    const GH_DATA_PATH = 'data.json';
-    const GH_UPLOAD_DIR = 'assets/uploads';
 
-    function ghGetToken() { return localStorage.getItem('gh_pat') || ''; }
-    function ghSetToken(t) { if (t) localStorage.setItem('gh_pat', t); else localStorage.removeItem('gh_pat'); updateCloudSettingsBtn(); }
-    function ghHasToken() { return !!ghGetToken(); }
-    function ghAuthHeaders() { const t = ghGetToken(); return t ? { Authorization: 'token ' + t } : {}; }
-
-    /* URL public của 1 file trong repo — qua jsDelivr CDN (nhanh cho ảnh/JS/CSS) */
-    function ghPublicUrl(path) {
-      return `https://cdn.jsdelivr.net/gh/${GH_OWNER}/${GH_REPO}@${GH_BRANCH}/${path}`;
+    function cfGetPassword() { return sessionStorage.getItem('cf_edit_pw') || localStorage.getItem('cf_edit_pw') || ''; }
+    function cfSetPassword(pw) {
+      if (pw) { sessionStorage.setItem('cf_edit_pw', pw); localStorage.setItem('cf_edit_pw', pw); }
+      else { sessionStorage.removeItem('cf_edit_pw'); localStorage.removeItem('cf_edit_pw'); }
+      updateCloudSettingsBtn();
     }
-    /* URL raw (dùng cho .docx và binary không phải web asset — jsDelivr chặn các loại này) */
-    function ghRawUrl(path) {
-      return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${path}`;
-    }
+    function cfHasPassword() { return !!cfGetPassword(); }
+    function cfAuthHeaders() { return { 'X-Edit-Password': cfGetPassword() }; }
 
     function fileToBase64(file) {
       return new Promise((resolve, reject) => {
@@ -2934,49 +2934,25 @@
       });
     }
 
-    async function ghGetFileSha(path) {
-      try {
-        const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}`, { headers: ghAuthHeaders() });
-        if (!r.ok) return null;
-        const d = await r.json();
-        return d.sha || null;
-      } catch { return null; }
-    }
-
-    async function ghPutFile(path, contentBase64, message) {
-      if (!ghHasToken()) throw new Error('Chưa cấu hình GitHub Personal Access Token. Bấm nút ☁️ ở góc phải dưới để cấu hình.');
-      const sha = await ghGetFileSha(path);
-      const body = { message: message || ('update ' + path), content: contentBase64, branch: GH_BRANCH };
-      if (sha) body.sha = sha;
-      const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
-        method: 'PUT',
-        headers: { ...ghAuthHeaders(), 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
-        body: JSON.stringify(body)
+    async function ghUploadFile(file, prefix) {
+      if (!cfHasPassword()) throw new Error('Chưa nhập mật khẩu edit. Bấm nút ☁️ ở góc phải dưới.');
+      const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+      const b64 = await fileToBase64(file);
+      const res = await fetch(WORKER_URL + '/api/upload', {
+        method: 'POST',
+        headers: { ...cfAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefix, filename: file.name, contentBase64: b64, ext }),
       });
       if (!res.ok) {
         const t = await res.text().catch(() => '');
-        throw new Error(`GitHub ${res.status}: ${t.slice(0, 200)}`);
+        if (res.status === 401) throw new Error('Sai mật khẩu edit. Vào ☁️ để nhập lại.');
+        throw new Error(`Upload lỗi ${res.status}: ${t.slice(0, 200)}`);
       }
-      return await res.json();
+      const d = await res.json();
+      return { url: d.url, path: d.path };
     }
 
-    function sanitizeStem(name) {
-      return (name.replace(/\.[^.]+$/, '') || 'file').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40) || 'file';
-    }
-
-    async function ghUploadFile(file, prefix) {
-      const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
-      const stem = sanitizeStem(file.name);
-      const path = `${GH_UPLOAD_DIR}/${prefix}-${stem}-${Date.now()}.${ext}`;
-      const b64 = await fileToBase64(file);
-      await ghPutFile(path, b64, `upload: ${path}`);
-      /* jsDelivr chặn .docx và các binary không phải web asset → dùng raw URL */
-      const NON_CDN = ['docx', 'doc', 'pdf', 'zip', 'xlsx', 'pptx'];
-      const url = NON_CDN.includes(ext) ? ghRawUrl(path) : ghPublicUrl(path);
-      return { path, url };
-    }
-
-    /* Trạng thái — nguồn duy nhất của sự thật, đồng bộ với /data.json trên repo */
+    /* Trạng thái — nguồn duy nhất của sự thật */
     let cloudData = { slots: {}, avatar: null, slideBg: {}, docx: {}, slotFmt: {}, bgAdjust: {} };
 
     function showCloudSyncStatus(message, isError = false) {
@@ -2991,17 +2967,18 @@
       box.textContent = message;
       box.style.display = 'block';
       box.style.color = isError ? '#ffd6d6' : '#d7fffb';
-      box.style.background = isError ? 'rgba(92, 24, 24, .96)' : 'rgba(13, 55, 52, .96)';
-      box.style.border = isError ? '1px solid rgba(217, 122, 120, .7)' : '1px solid rgba(120, 216, 208, .55)';
+      box.style.background = isError ? 'rgba(92,24,24,.96)' : 'rgba(13,55,52,.96)';
+      box.style.border = isError ? '1px solid rgba(217,122,120,.7)' : '1px solid rgba(120,216,208,.55)';
       clearTimeout(box._hideTimer);
       if (!isError) box._hideTimer = setTimeout(() => { box.style.display = 'none'; }, 2800);
     }
 
     function describeDataJsonFailure(e) {
-      return 'File đã lưu lên GitHub nhưng data.json chưa được cập nhật, nên trình duyệt khác sẽ chưa thấy thay đổi. Kiểm tra token có quyền Contents: Read and write và đúng branch main. Chi tiết: ' + (e && e.message ? e.message : e);
+      if (e && e.message && e.message.includes('Sai mật khẩu')) return e.message;
+      return 'data.json chưa được cập nhật, trình duyệt khác chưa thấy thay đổi. Chi tiết: ' + (e && e.message ? e.message : e);
     }
 
-    /* Debounce ghi data.json để gộp nhiều thay đổi liên tiếp thành 1 commit */
+    /* Debounce ghi data.json */
     let _writeTimer = null, _writeInFlight = false, _writeDirty = false;
     function scheduleWriteDataJson() {
       _writeDirty = true;
@@ -3014,12 +2991,10 @@
         try {
           await writeDataJsonNow();
           showCloudSyncStatus('Đã đồng bộ data.json lên GitHub.');
-        }
-        catch (e) {
+        } catch (e) {
           console.warn('[data.json] write failed', e);
           showCloudSyncStatus(describeDataJsonFailure(e), true);
-        }
-        finally {
+        } finally {
           _writeInFlight = false;
           if (_writeDirty) scheduleWriteDataJson();
         }
@@ -3027,10 +3002,17 @@
     }
 
     async function writeDataJsonNow() {
-      const json = JSON.stringify(cloudData, null, 2);
-      const b64 = btoa(unescape(encodeURIComponent(json)));
-      await ghPutFile(GH_DATA_PATH, b64, 'update data.json');
-      /* Sau khi ghi xong, tạm dừng poll 12s để tránh tự apply lại dữ liệu mình vừa push */
+      if (!cfHasPassword()) throw new Error('Chưa nhập mật khẩu edit.');
+      const res = await fetch(WORKER_URL + '/api/data', {
+        method: 'POST',
+        headers: { ...cfAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: cloudData }),
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => '');
+        if (res.status === 401) throw new Error('Sai mật khẩu edit. Vào ☁️ để nhập lại.');
+        throw new Error(`Worker ${res.status}: ${t.slice(0, 200)}`);
+      }
       if (typeof pausePollAfterWrite === 'function') pausePollAfterWrite();
     }
 
@@ -3049,33 +3031,34 @@
     }
 
     async function readDataJson() {
-      /* Ưu tiên đọc trực tiếp từ Pages — same-origin, CDN cached, rất nhanh */
+      /* Thử đọc qua Worker (không cần token ở client) */
       try {
-        const r = await fetch(`./${GH_DATA_PATH}?t=${Date.now()}`, { cache: 'no-cache' });
+        const r = await fetch(WORKER_URL + '/api/data', { cache: 'no-cache' });
         if (r.ok) {
           const text = await r.text();
           if (text.trim()) return JSON.parse(text);
         }
       } catch { }
-      /* Fallback: API GitHub (xử lý trường hợp data.json mới commit, Pages chưa build xong) */
+      /* Fallback: raw GitHub (không cần token, cho visitor) */
       try {
-        const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_DATA_PATH}?ref=${GH_BRANCH}`, {
-          headers: { ...ghAuthHeaders(), Accept: 'application/vnd.github.raw' }
-        });
-        if (r.ok) return await r.json();
+        const rawUrl = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/data.json`;
+        const r = await fetch(rawUrl + '?t=' + Date.now(), { cache: 'no-cache' });
+        if (r.ok) {
+          const text = await r.text();
+          if (text.trim()) return JSON.parse(text);
+        }
       } catch { }
       return null;
     }
 
-    /* Tương thích lùi với code cũ — không cần làm gì, mọi thay đổi đều đi qua scheduleWriteDataJson */
     function syncDataToCloud() { scheduleWriteDataJson(); }
 
-    /* ───── Cloud settings UI (nút ⚙️ + modal nhập PAT) ───── */
+    /* ── Cloud settings UI ── */
     function updateCloudSettingsBtn() {
       const btn = document.getElementById('gh-settings-btn');
       if (!btn) return;
-      btn.textContent = ghHasToken() ? '☁️ GitHub' : '⚠️ Cấu hình GitHub';
-      btn.style.borderColor = ghHasToken() ? '#2b3335' : '#d97a78';
+      btn.textContent = cfHasPassword() ? '☁️ Worker' : '⚠️ Nhập mật khẩu';
+      btn.style.borderColor = cfHasPassword() ? '#2b3335' : '#d97a78';
     }
 
     function ensureCloudSettingsUI() {
@@ -3084,7 +3067,6 @@
       btn.id = 'gh-settings-btn';
       btn.type = 'button';
       btn.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:9999;padding:.55rem 1rem;background:#181c1f;color:#78d8d0;border:1px solid #2b3335;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.4);';
-      /* Ẩn nút khi editMode = false (body.mode-present) */
       const styleId = 'gh-btn-style';
       if (!document.getElementById(styleId)) {
         const s = document.createElement('style');
@@ -3099,43 +3081,58 @@
 
     function openCloudSettings() {
       if (document.getElementById('gh-modal')) return;
-      const has = ghHasToken();
+      const hasPw = cfHasPassword();
       const overlay = document.createElement('div');
       overlay.id = 'gh-modal';
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:10000;display:flex;align-items:center;justify-content:center;padding:1rem;';
       overlay.innerHTML = `
-        <div style="background:#181c1f;color:#f3f7f7;max-width:560px;width:100%;border-radius:12px;padding:1.5rem;border:1px solid #2b3335;font-family:'Outfit',sans-serif;">
-          <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:.8rem;">Lưu trữ GitHub</h2>
+        <div style="background:#181c1f;color:#f3f7f7;max-width:520px;width:100%;border-radius:12px;padding:1.5rem;border:1px solid #2b3335;font-family:'Outfit',sans-serif;">
+          <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:.8rem;">☁️ Cloudflare Worker</h2>
           <p style="font-size:14px;color:#c8d1d1;line-height:1.6;margin-bottom:.8rem;">
-            Repo: <code style="color:#78d8d0;">${GH_OWNER}/${GH_REPO}</code> · branch <code style="color:#78d8d0;">${GH_BRANCH}</code><br>
-            File upload → <code style="color:#78d8d0;">${GH_UPLOAD_DIR}/</code>, danh sách URL → <code style="color:#78d8d0;">${GH_DATA_PATH}</code>.
-          </p>
-          <p style="font-size:13px;color:#778383;line-height:1.55;margin-bottom:1rem;">
-            Cần Personal Access Token <b>fine-grained</b> với quyền <code>Contents: Read and write</code> giới hạn ở repo này. Token chỉ lưu localStorage trên máy bạn, không bao giờ được commit lên repo.<br>
-            👉 Tạo token: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener" style="color:#78d8d0;">github.com/settings/personal-access-tokens/new</a>
+            Edit mode dùng Worker để đồng bộ giữa mọi trình duyệt.<br>
+            Nhập mật khẩu edit (đặt khi deploy Worker qua <code style="color:#78d8d0;">wrangler secret put EDIT_PASSWORD</code>).
           </p>
           <input id="gh-pat-input" type="password" autocomplete="off" spellcheck="false"
-                 placeholder="${has ? '(đã có token — nhập mới để thay)' : 'github_pat_... hoặc ghp_...'}"
-                 style="width:100%;padding:.65rem;background:#0d0f10;color:#f3f7f7;border:1px solid #2b3335;border-radius:6px;font-family:monospace;font-size:13px;margin-bottom:1rem;" />
+                 placeholder="${hasPw ? '(đã có mật khẩu — nhập mới để thay)' : 'Mật khẩu edit...'}"
+                 style="width:100%;padding:.65rem;background:#0d0f10;color:#f3f7f7;border:1px solid #2b3335;border-radius:6px;font-family:monospace;font-size:14px;margin-bottom:1rem;" />
+          <div id="gh-auth-status" style="font-size:13px;margin-bottom:.8rem;display:none;"></div>
           <div style="display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap;">
-            ${has ? '<button type="button" id="gh-modal-clear" style="padding:.55rem 1rem;background:transparent;color:#d97a78;border:1px solid #2b3335;border-radius:6px;cursor:pointer;font-family:inherit;">Xoá token</button>' : ''}
+            ${hasPw ? '<button type="button" id="gh-modal-clear" style="padding:.55rem 1rem;background:transparent;color:#d97a78;border:1px solid #2b3335;border-radius:6px;cursor:pointer;font-family:inherit;">Xoá mật khẩu</button>' : ''}
             <button type="button" id="gh-modal-cancel" style="padding:.55rem 1rem;background:transparent;color:#c8d1d1;border:1px solid #2b3335;border-radius:6px;cursor:pointer;font-family:inherit;">Đóng</button>
-            <button type="button" id="gh-modal-save" style="padding:.55rem 1rem;background:#78d8d0;color:#0d0f10;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-family:inherit;">Lưu</button>
+            <button type="button" id="gh-modal-save" style="padding:.55rem 1rem;background:#78d8d0;color:#0d0f10;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-family:inherit;">Xác nhận</button>
           </div>
         </div>`;
       document.body.appendChild(overlay);
       overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
       const close = () => overlay.remove();
       document.getElementById('gh-modal-cancel').onclick = close;
-      document.getElementById('gh-modal-save').onclick = () => {
+      document.getElementById('gh-modal-save').onclick = async () => {
         const v = document.getElementById('gh-pat-input').value.trim();
-        if (v) ghSetToken(v);
-        close();
+        const statusEl = document.getElementById('gh-auth-status');
+        const pw = v || cfGetPassword();
+        if (!pw) { statusEl.style.display = 'block'; statusEl.style.color = '#d97a78'; statusEl.textContent = 'Vui lòng nhập mật khẩu.'; return; }
+        statusEl.style.display = 'block'; statusEl.style.color = '#78d8d0'; statusEl.textContent = 'Đang kiểm tra...';
+        try {
+          const r = await fetch(WORKER_URL + '/api/auth/check', {
+            method: 'POST', headers: { 'X-Edit-Password': pw, 'Content-Type': 'application/json' },
+          });
+          const d = await r.json();
+          if (d.ok) {
+            if (v) cfSetPassword(v);
+            statusEl.style.color = '#78d8d0'; statusEl.textContent = '✅ Mật khẩu đúng!';
+            setTimeout(close, 800);
+          } else {
+            statusEl.style.color = '#d97a78'; statusEl.textContent = '❌ Sai mật khẩu. Thử lại.';
+          }
+        } catch (e) {
+          statusEl.style.color = '#d97a78'; statusEl.textContent = 'Không kết nối được Worker: ' + e.message;
+        }
       };
+      const inp = document.getElementById('gh-pat-input');
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('gh-modal-save').click(); });
       const clr = document.getElementById('gh-modal-clear');
-      if (clr) clr.onclick = () => { ghSetToken(''); close(); };
+      if (clr) clr.onclick = () => { cfSetPassword(''); close(); };
     }
-
 
     /* Format settings per slot: { fitMode, s, tx, ty } */
     const slotFmt = {};
