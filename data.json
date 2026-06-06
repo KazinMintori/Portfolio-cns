@@ -9,9 +9,7 @@
     "b3b": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b3b.jpg",
     "b3c": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b3c.jpg",
     "b3d": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b3d.jpg",
-    "b4a": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b4a.jpg",
-    "b5b": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slot-b5b-a99302fb-0fde-474a-aa5c-c7276746afeb-1780764683919.jpg",
-    "b5c": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/slot-b5c-a602d181-d62a-4fdd-b28f-0deb437370e2-1780764753531.jpg"
+    "b4a": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b4a.jpg"
   },
   "avatar": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/avatar.JPG",
   "slideBg": {
@@ -49,6 +47,12 @@
       "ty": 0
     },
     "b1e": {
+      "fitMode": "contain",
+      "s": 1,
+      "tx": 0,
+      "ty": 0
+    },
+    "b3d": {
       "fitMode": "contain",
       "s": 1,
       "tx": 0,
