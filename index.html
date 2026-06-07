@@ -2568,33 +2568,43 @@
               <div class="bai-title">AI hỗ trợ sáng tạo nội dung</div>
               <div class="bai-module">Sáng tạo nội dung số</div>
             </div>
+            <p class="bai-desc">Ứng dụng Generative AI trong việc lên ý tưởng, thiết kế nội dung và xây dựng sản phẩm
+              truyền thông số Infographic về chủ đề bảo vệ môi trường.</p>
 
             <div class="img-block">
               <div class="img-block-label">Sản phẩm Infographic hoàn thiện</div>
-              <div class="img-full">
-                <!-- Đã sửa aspect-ratio thành 16/8 để khung ảnh hiển thị theo chiều ngang -->
-                <div class="img-slot" id="b5a" style="aspect-ratio: 16/8;">
+              <div class="img-full" style="margin-bottom: 1rem;">
+                <div class="img-slot" id="b5a" style="aspect-ratio:9/16">
                   <div class="si">📊</div>
-                  <div class="st">Infographic "Hành Động Xanh Cho Tương Lai"</div>
-                  <div class="sh">Kéo thả hoặc click tải ảnh sản phẩm</div><input type="file" accept="image/*">
+                  <div class="st">Infographic Hành Động Xanh (Poster Chính)</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Poster chính</div>
+                  <input type="file" accept="image/*">
                 </div>
               </div>
-            </div>
 
-            <div class="img-block">
-              <div class="img-block-label">Quy trình sử dụng 3 công cụ AI</div>
+              <div class="img-block-label">Quá trình thực hiện & Prompt Engineering</div>
               <div class="img-3col">
                 <div class="img-slot" id="b5b">
-                  <div class="si">✍️</div>
-                  <div class="st">Claude AI (Nội dung)</div><input type="file" accept="image/*">
+                  <div class="si">💬</div>
+                  <div class="st">Prompt Ý tưởng (Claude AI)</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Ý tưởng nội dung</div>
+                  <input type="file" accept="image/*">
                 </div>
                 <div class="img-slot" id="b5c">
                   <div class="si">🎨</div>
-                  <div class="st">DALL-E 3 (Hình ảnh)</div><input type="file" accept="image/*">
+                  <div class="st">Tạo tài nguyên (DALL-E 3)</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Hình ảnh thiết kế</div>
+                  <input type="file" accept="image/*">
                 </div>
                 <div class="img-slot" id="b5d">
-                  <div class="si">✨</div>
-                  <div class="st">Canva AI (Thiết kế)</div><input type="file" accept="image/*">
+                  <div class="si">🛠️</div>
+                  <div class="st">Thiết kế tổng thể (Canva AI)</div>
+                  <div class="sh">Kéo thả hoặc click tải ảnh</div>
+                  <div class="cap">Chỉnh sửa layout</div>
+                  <input type="file" accept="image/*">
                 </div>
               </div>
             </div>
@@ -2607,23 +2617,23 @@
             </div>
 
             <div class="word-section">
-              <!-- Trạng thái đã đính kèm file Word (has-file) -->
-              <div class="word-drop has-file" id="wd-bai5" ondragover="wdDragOver(event,this)"
-                ondragleave="wdDragLeave(this)" ondrop="wdDrop(event,'bai5')">
+              <div class="word-drop" id="wd-bai5" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
+                ondrop="wdDrop(event,'bai5')">
                 <div class="wd-icon">📄</div>
                 <div class="wd-info">
-                  <div class="wd-title" id="wn-bai5">📎 Bai5.docx</div>
+                  <div class="wd-title" id="wn-bai5">Chèn file Word bài làm</div>
                   <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
                 </div>
                 <button class="wd-del" onclick="wdRemove('bai5',event)">✕ Xóa</button>
                 <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai5')">
               </div>
               <button class="bai-view-btn" id="vb-bai5"
-                onclick="openDoc('bai5','Bài 05 · Mục 5.4','AI hỗ trợ sáng tạo nội dung')">
+                onclick="openDoc('bai5','Bài 05 · Mục 5.4','AI hỗ trợ sáng tạo nội dung')" disabled>
                 Xem toàn bộ bài làm <span class="btn-arrow">→</span>
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </div>
