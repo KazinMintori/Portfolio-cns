@@ -4472,15 +4472,26 @@
       }, { passive: true });
 
       // Touch swipe
-      let tY0 = 0, tT0 = 0;
+      let tY0 = 0, tT0 = 0, tCool = false;
       window.addEventListener('touchstart', e => {
         if (e.target.closest('.img-slot,.fmt-panel,.lightbox,.doc-page')) return;
         tY0 = e.touches[0].clientY; tT0 = Date.now();
       }, { passive: true });
       window.addEventListener('touchend', e => {
         if (e.target.closest('.img-slot,.fmt-panel,.lightbox,.doc-page')) return;
+        if (tCool || animating) return;
         const dy = tY0 - e.changedTouches[0].clientY;
-        if (Math.abs(dy) > 55 && Date.now() - tT0 < 600) { if (dy > 0) next(); else prev(); }
+        if (Math.abs(dy) < 55 || Date.now() - tT0 >= 600) return;
+        // Bug 3 fix: allow inner scroll before switching slide
+        const slide = slides[current];
+        if (slide && slide.scrollHeight > slide.clientHeight + 6) {
+          const atBot = slide.scrollTop + slide.clientHeight >= slide.scrollHeight - 10;
+          const atTop = slide.scrollTop <= 6;
+          if (dy > 0 && !atBot) return;
+          if (dy < 0 && !atTop) return;
+        }
+        tCool = true; setTimeout(() => { tCool = false; }, 1100);
+        if (dy > 0) next(); else prev();
       }, { passive: true });
 
       const FP_BG_DB = 'portfolio-slide-backgrounds';
