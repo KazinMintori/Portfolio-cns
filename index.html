@@ -3386,21 +3386,8 @@
       const savedAv = localStorage.getItem('portfolio_avatar');
       if (savedAv) { const av = document.querySelector('#avatarBox img'); if (av) av.src = savedAv; }
 
-      /* Hiện trạng thái loading cho các nút xem bài trong khi chờ cloud */
-      ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
-        const btn = document.getElementById('vb-' + id);
-        if (btn) { btn.textContent = '⏳ Đang tải...'; btn.disabled = true; }
-      });
-
       const data = await readDataJson();
       _lastPollStr = JSON.stringify(data);
-
-      /* Reset lại text nút trước khi apply (applyCloudSnapshot sẽ enable nếu có file) */
-      ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
-        const btn = document.getElementById('vb-' + id);
-        if (btn) btn.innerHTML = 'Xem toàn bộ bài làm <span class="btn-arrow">→</span>';
-      });
-
       await applyCloudSnapshot(data, true);
 
       /* Bắt đầu polling sau 3s (để tránh fetch chồng lên lần load đầu) */
@@ -4177,6 +4164,14 @@
     const docEmpty = document.getElementById('doc-empty-state');
     const docEmptyMsg = document.getElementById('doc-empty-msg');
 
+    /* URL tĩnh fallback — đảm bảo luôn hoạt động kể cả khi data.json chưa load */
+    const DOCX_STATIC_URLS = {
+      bai1: 'https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/Bai1.docx',
+      bai2: 'https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/Bai2.docx',
+      bai3: 'https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/Bai3.docx',
+      bai4: 'https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/Bai4.docx',
+    };
+
     async function openDoc(baiId, num, title) {
       document.getElementById('doc-topbar-num').textContent = num;
       document.getElementById('doc-topbar-title').textContent = title;
@@ -4188,37 +4183,25 @@
       docEmpty.style.display = 'none';
       docRender.innerHTML = '';
 
-      /* Nếu buffer đang được fetch từ cloud, đợi tối đa 12 giây */
-      if (docxPending[baiId]) {
-        const MAX_WAIT = 12000;
-        const POLL = 200;
-        let waited = 0;
-        await new Promise(resolve => {
-          const check = setInterval(() => {
-            waited += POLL;
-            if (!docxPending[baiId] || waited >= MAX_WAIT) { clearInterval(check); resolve(); }
-          }, POLL);
-        });
-      }
-
+      /* Lấy buffer: ưu tiên cache → cloud data URL → static URL fallback */
       let buf = docxBuffers[baiId];
 
-      /* Buffer chưa có → fetch ngay tại chỗ thay vì báo lỗi */
       if (!buf) {
+        /* Tìm URL: từ cloudData (nếu đã load) hoặc fallback static */
         const meta = cloudData.docx && cloudData.docx[baiId];
-        if (meta && meta.url) {
+        const url = (meta && meta.url) || DOCX_STATIC_URLS[baiId];
+        if (url) {
           try {
-            const r = await fetch(meta.url);
+            const r = await fetch(url);
             if (r.ok) { buf = await r.arrayBuffer(); docxBuffers[baiId] = buf; }
-          } catch (e) { console.warn('[openDoc] on-demand fetch failed', e); }
+          } catch (e) { console.warn('[openDoc] fetch failed', e); }
         }
       }
 
       if (!buf) {
-        const meta = cloudData.docx && cloudData.docx[baiId];
         docLoading.style.display = 'none';
-        docEmptyMsg.textContent = meta && meta.url
-          ? '⚠️ Không tải được file từ cloud. Thử tải lại trang hoặc kiểm tra kết nối.'
+        docEmptyMsg.textContent = DOCX_STATIC_URLS[baiId]
+          ? '⚠️ Không tải được file. Kiểm tra kết nối mạng rồi thử lại.'
           : 'Chưa có file Word nào được chèn cho bài này.';
         docEmpty.style.display = 'flex';
         return;
