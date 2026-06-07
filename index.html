@@ -2950,8 +2950,7 @@
       btn.id = 'edit-mode-toggle';
       btn.type = 'button';
       btn.title = 'Chuyển đổi chế độ chỉnh sửa / xem';
-      btn.style.cssText = 'position:fixed;bottom:16px;left:16px;z-index:9999;padding:.55rem 1rem;background:#181c1f;color:#c8d1d1;border:1px solid #2b3335;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:all .2s;';
-      btn.textContent = '👁 Xem';
+      btn.style.cssText = 'display:none; position:fixed;bottom:16px;left:16px;z-index:9999;padding:.55rem 1rem;background:#181c1f;color:#c8d1d1;border:1px solid #2b3335;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:all .2s;'; btn.textContent = '👁 Xem';
       btn.onclick = function () {
         editMode = !editMode;
         applyMode();
