@@ -2815,10 +2815,6 @@
         <span class="doc-topbar-num" id="doc-topbar-num"></span>
         <span class="doc-topbar-title" id="doc-topbar-title"></span>
       </div>
-      <a id="doc-download-btn" href="#" target="_blank" download
-        style="display:none;margin-left:auto;padding:.45rem 1rem;border-radius:8px;background:rgba(120,216,208,.12);border:1px solid rgba(120,216,208,.35);color:var(--accent);font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;">
-        📥 Tải xuống
-      </a>
     </div>
     <div class="doc-scroll" id="doc-scroll">
       <div class="doc-loading" id="doc-loading" style="display:none">
@@ -2915,10 +2911,7 @@
        ────────────────────────────────────────────────────────────────── */
 
     /* ⚙️ CẤU HÌNH — sửa WORKER_URL sau khi deploy Worker */
-    /* 👇 Thay YOUR_SUBDOMAIN bằng subdomain thực của bạn trên Cloudflare Workers */
-    const WORKER_URL = 'https://portfolio-worker.kazinmintori.workers.dev';
-    // ↑ Ví dụ: nếu worker tên "portfolio-worker" và account subdomain là "kazinmintori"
-    //   → https://portfolio-worker.kazinmintori.workers.dev
+    const WORKER_URL = 'https://portfolio-worker.YOUR_SUBDOMAIN.workers.dev';
     const GH_OWNER = 'kazinmintori';   // chỉ dùng để build jsDelivr URL cho UI
     const GH_REPO = 'Portfolio-cns';
     const GH_BRANCH = 'main';
@@ -2944,32 +2937,12 @@
     async function ghUploadFile(file, prefix) {
       if (!cfHasPassword()) throw new Error('Chưa nhập mật khẩu edit. Bấm nút ☁️ ở góc phải dưới.');
       const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
-
-      /* File lớn hoặc docx/pdf → dùng multipart binary để tránh giới hạn base64 của Worker */
-      const NON_JSON = ['docx', 'doc', 'pdf', 'zip', 'xlsx', 'pptx'];
-      const useMultipart = NON_JSON.includes(ext) || file.size > 512 * 1024;
-
-      let res;
-      if (useMultipart) {
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('filename', file.name);
-        fd.append('prefix', prefix);
-        fd.append('ext', ext);
-        res = await fetch(WORKER_URL + '/api/upload', {
-          method: 'POST',
-          headers: { ...cfAuthHeaders() }, // KHÔNG set Content-Type — browser tự thêm boundary
-          body: fd,
-        });
-      } else {
-        const b64 = await fileToBase64(file);
-        res = await fetch(WORKER_URL + '/api/upload', {
-          method: 'POST',
-          headers: { ...cfAuthHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prefix, filename: file.name, contentBase64: b64, ext }),
-        });
-      }
-
+      const b64 = await fileToBase64(file);
+      const res = await fetch(WORKER_URL + '/api/upload', {
+        method: 'POST',
+        headers: { ...cfAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefix, filename: file.name, contentBase64: b64, ext }),
+      });
       if (!res.ok) {
         const t = await res.text().catch(() => '');
         if (res.status === 401) throw new Error('Sai mật khẩu edit. Vào ☁️ để nhập lại.');
@@ -3309,6 +3282,13 @@
       if (_writeInFlight) return;
 
       const snap = migrateRaw(data);
+
+      /* 6) Docx — capture prevUrl TRƯỚC khi cloudData = snap ghi đè */
+      const _prevDocxUrls = {};
+      ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
+        _prevDocxUrls[id] = cloudData.docx?.[id]?.url || null;
+      });
+
       cloudData = snap;
 
       /* 1) Ảnh bài tập */
@@ -3348,13 +3328,12 @@
         fpApplyBgAdjust(parseInt(idx));
       });
 
-      /* 6) Docx — chỉ fetch lại nếu URL thay đổi */
+      /* 6) Docx fetch */
       const BAIS = ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'];
       Promise.all(Object.keys(snap.docx).map(async baiId => {
         const meta = snap.docx[baiId]; if (!meta?.url) return;
         setWordReady(baiId, meta.name || 'document.docx');
-        const prevUrl = cloudData.docx[baiId]?.url;
-        if (docxBuffers[baiId] && prevUrl === meta.url) return;
+        if (docxBuffers[baiId] && _prevDocxUrls[baiId] === meta.url) return;
         docxPending[baiId] = true;
         try { const r = await fetch(meta.url); if (r.ok) docxBuffers[baiId] = await r.arrayBuffer(); }
         catch (e) { console.warn('[docx] download failed', baiId, e); }
@@ -3364,9 +3343,9 @@
       BAIS.forEach(id => {
         if (!snap.docx[id] && docxBuffers[id]) {
           delete docxBuffers[id];
-          const nameEl = document.getElementById('wn-' + id); if (nameEl) nameEl.textContent = '';
+          const nameEl = document.getElementById('wn-' + id); if (nameEl) nameEl.textContent = 'Chèn file Word bài làm';
           const drop = document.getElementById('wd-' + id); if (drop) drop.classList.remove('has-file');
-          const vb = document.getElementById('vb-' + id); if (vb) vb.style.display = 'none';
+          const vb = document.getElementById('vb-' + id); if (vb) { vb.disabled = true; vb.style.display = ''; }
         }
       });
     }
@@ -4191,17 +4170,6 @@
       docPage.classList.add('open');
       document.getElementById('doc-scroll').scrollTop = 0;
 
-      /* Hiện/ẩn nút download tùy theo có URL hay không */
-      const dlBtn = document.getElementById('doc-download-btn');
-      const meta = cloudData.docx && cloudData.docx[baiId];
-      if (dlBtn && meta && meta.url) {
-        dlBtn.href = meta.url;
-        dlBtn.download = meta.name || 'document.docx';
-        dlBtn.style.display = 'inline-flex';
-      } else if (dlBtn) {
-        dlBtn.style.display = 'none';
-      }
-
       docLoading.style.display = 'flex';
       docRender.style.display = 'none';
       docEmpty.style.display = 'none';
@@ -4222,33 +4190,23 @@
 
       let buf = docxBuffers[baiId];
 
-      /* Nếu buffer chưa có nhưng có URL → thử fetch lại một lần nữa */
+      /* Buffer chưa có → fetch ngay tại chỗ thay vì báo lỗi */
       if (!buf) {
         const meta = cloudData.docx && cloudData.docx[baiId];
         if (meta && meta.url) {
           try {
-            const r = await fetch(meta.url + '?t=' + Date.now());
-            if (r.ok) {
-              buf = await r.arrayBuffer();
-              docxBuffers[baiId] = buf;
-            }
-          } catch (e) {
-            console.warn('[openDoc] retry fetch failed', e);
-          }
+            const r = await fetch(meta.url);
+            if (r.ok) { buf = await r.arrayBuffer(); docxBuffers[baiId] = buf; }
+          } catch (e) { console.warn('[openDoc] on-demand fetch failed', e); }
         }
       }
 
       if (!buf) {
         const meta = cloudData.docx && cloudData.docx[baiId];
         docLoading.style.display = 'none';
-        if (meta && meta.url) {
-          /* Có URL nhưng không fetch được → cho nút tải xuống trực tiếp */
-          docEmptyMsg.innerHTML =
-            '⚠️ Không render được file trực tiếp.<br>' +
-            '<a href="' + meta.url + '" target="_blank" download style="color:var(--accent);text-decoration:underline;margin-top:.5rem;display:inline-block">📥 Tải file ' + (meta.name || 'Word') + ' về máy</a>';
-        } else {
-          docEmptyMsg.textContent = 'Chưa có file Word nào được chèn cho bài này.';
-        }
+        docEmptyMsg.textContent = meta && meta.url
+          ? '⚠️ Không tải được file từ cloud. Thử tải lại trang hoặc kiểm tra kết nối.'
+          : 'Chưa có file Word nào được chèn cho bài này.';
         docEmpty.style.display = 'flex';
         return;
       }
