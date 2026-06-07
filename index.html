@@ -2568,52 +2568,44 @@
               <div class="bai-title">AI hỗ trợ sáng tạo nội dung</div>
               <div class="bai-module">Sáng tạo nội dung số</div>
             </div>
+
             <div class="img-block">
-              <div class="img-block-label">Sản phẩm video hoàn thiện</div>
+              <div class="img-block-label">Sản phẩm Infographic hoàn thiện</div>
               <div class="img-full">
-                <div class="img-slot" id="b5a">
-                  <div class="si">🎬</div>
-                  <div class="st">Thumbnail video Minimax</div>
+                <!-- Sử dụng aspect-ratio dọc (VD: 9/16) để phù hợp với hiển thị Infographic Poster -->
+                <div class="img-slot" id="b5a" style="aspect-ratio:9/16">
+                  <div class="si">📊</div>
+                  <div class="st">Infographic Hành Động Xanh</div>
                   <div class="sh">Kéo thả hoặc click tải ảnh</div><input type="file" accept="image/*">
                 </div>
               </div>
             </div>
-            <div class="img-block">
-              <div class="img-block-label">Quy trình sử dụng 3 công cụ AI</div>
-              <div class="img-3col">
-                <div class="img-slot" id="b5b">
-                  <div class="si">🤖</div>
-                  <div class="st">Midjourney</div><input type="file" accept="image/*">
-                </div>
-                <div class="img-slot" id="b5c">
-                  <div class="si">✨</div>
-                  <div class="st">Canva AI / Firefly</div><input type="file" accept="image/*">
-                </div>
-                <div class="img-slot" id="b5d">
-                  <div class="si">💻</div>
-                  <div class="st">Demo C++</div><input type="file" accept="image/*">
-                </div>
-              </div>
+
+            <div class="tags">
+              <span class="tag">Generative AI</span>
+              <span class="tag">Claude AI</span>
+              <span class="tag">DALL-E 3</span>
+              <span class="tag">Canva AI</span>
             </div>
-            <div class="tags"><span class="tag">Generative AI</span><span class="tag">Midjourney</span><span
-                class="tag">C++</span></div>
+
             <div class="word-section">
-              <div class="word-drop" id="wd-bai5" ondragover="wdDragOver(event,this)" ondragleave="wdDragLeave(this)"
-                ondrop="wdDrop(event,'bai5')">
+              <div class="word-drop has-file" id="wd-bai5" ondragover="wdDragOver(event,this)"
+                ondragleave="wdDragLeave(this)" ondrop="wdDrop(event,'bai5')">
                 <div class="wd-icon">📄</div>
                 <div class="wd-info">
-                  <div class="wd-title" id="wn-bai5">Chèn file Word bài làm</div>
+                  <div class="wd-title" id="wn-bai5">📎 Bai5.docx</div>
                   <div class="wd-hint">Kéo thả hoặc click để chọn .docx</div>
                 </div>
                 <button class="wd-del" onclick="wdRemove('bai5',event)">✕ Xóa</button>
                 <input type="file" accept=".docx,.doc" onchange="wdSelect(this,'bai5')">
               </div>
               <button class="bai-view-btn" id="vb-bai5"
-                onclick="openDoc('bai5','Bài 05 · Mục 5.4','AI hỗ trợ sáng tạo nội dung')" disabled>
+                onclick="openDoc('bai5','Bài 05 · Mục 5.4','AI hỗ trợ sáng tạo nội dung')">
                 Xem toàn bộ bài làm <span class="btn-arrow">→</span>
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </div>
