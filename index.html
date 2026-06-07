@@ -3032,18 +3032,18 @@
     }
 
     async function readDataJson() {
-      /* Thử đọc qua Worker (không cần token ở client) */
+      /* Ưu tiên raw GitHub (nhanh, không cần Worker) */
       try {
-        const r = await fetch(WORKER_URL + '/api/data', { cache: 'no-cache' });
+        const rawUrl = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/data.json`;
+        const r = await fetch(rawUrl + '?t=' + Date.now(), { cache: 'no-cache' });
         if (r.ok) {
           const text = await r.text();
           if (text.trim()) return JSON.parse(text);
         }
       } catch { }
-      /* Fallback: raw GitHub (không cần token, cho visitor) */
+      /* Fallback: Worker (dùng khi đã deploy Worker) */
       try {
-        const rawUrl = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/data.json`;
-        const r = await fetch(rawUrl + '?t=' + Date.now(), { cache: 'no-cache' });
+        const r = await fetch(WORKER_URL + '/api/data', { cache: 'no-cache' });
         if (r.ok) {
           const text = await r.text();
           if (text.trim()) return JSON.parse(text);
@@ -3386,8 +3386,21 @@
       const savedAv = localStorage.getItem('portfolio_avatar');
       if (savedAv) { const av = document.querySelector('#avatarBox img'); if (av) av.src = savedAv; }
 
+      /* Hiện trạng thái loading cho các nút xem bài trong khi chờ cloud */
+      ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
+        const btn = document.getElementById('vb-' + id);
+        if (btn) { btn.textContent = '⏳ Đang tải...'; btn.disabled = true; }
+      });
+
       const data = await readDataJson();
       _lastPollStr = JSON.stringify(data);
+
+      /* Reset lại text nút trước khi apply (applyCloudSnapshot sẽ enable nếu có file) */
+      ['bai1', 'bai2', 'bai3', 'bai4', 'bai5', 'bai6'].forEach(id => {
+        const btn = document.getElementById('vb-' + id);
+        if (btn) btn.innerHTML = 'Xem toàn bộ bài làm <span class="btn-arrow">→</span>';
+      });
+
       await applyCloudSnapshot(data, true);
 
       /* Bắt đầu polling sau 3s (để tránh fetch chồng lên lần load đầu) */
