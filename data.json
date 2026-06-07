@@ -13,7 +13,8 @@
     "b5a": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b5a.png",
     "b5b": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b5b.jpg",
     "b5c": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b5c.jpg",
-    "b5d": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b5d.jpg"
+    "b5d": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b5d.jpg",
+    "b6a": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/b6a.jpg"
   },
   "avatar": "https://cdn.jsdelivr.net/gh/kazinmintori/Portfolio-cns@main/assets/uploads/avatar.JPG",
   "slideBg": {
@@ -46,39 +47,41 @@
       "url": "https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/Bai5.docx",
       "name": "Bai5.docx"
     },
-    "bai6": null
-  },
-  "slotFmt": {
-    "b1a": {
-      "fitMode": "contain",
-      "s": 1,
-      "tx": 0,
-      "ty": 0
+    "bai6": {
+      "url": "https://raw.githubusercontent.com/kazinmintori/Portfolio-cns/main/assets/uploads/Bai5.docx",
+      "name": "Bai6.docx"
     },
-    "b1e": {
-      "fitMode": "contain",
-      "s": 1,
-      "tx": 0,
-      "ty": 0
+    "slotFmt": {
+      "b1a": {
+        "fitMode": "contain",
+        "s": 1,
+        "tx": 0,
+        "ty": 0
+      },
+      "b1e": {
+        "fitMode": "contain",
+        "s": 1,
+        "tx": 0,
+        "ty": 0
+      },
+      "b3d": {
+        "fitMode": "contain",
+        "s": 1,
+        "tx": 0,
+        "ty": 0
+      },
+      "b5a": {
+        "fitMode": "contain",
+        "s": 1,
+        "tx": 0,
+        "ty": 0
+      }
     },
-    "b3d": {
-      "fitMode": "contain",
-      "s": 1,
-      "tx": 0,
-      "ty": 0
-    },
-    "b5a": {
-      "fitMode": "contain",
-      "s": 1,
-      "tx": 0,
-      "ty": 0
-    }
-  },
-  "bgAdjust": {
-    "3": {
-      "scale": 1,
-      "x": 50,
-      "y": 0
+    "bgAdjust": {
+      "3": {
+        "scale": 1,
+        "x": 50,
+        "y": 0
+      }
     }
   }
-}
